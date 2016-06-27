@@ -8,41 +8,6 @@ var canvas = {
 };
 
 /***************************************************************************************************
- * Helper Functions
- **************************************************************************************************/
- 
-/**
- * Extends one class with another.
- * 
- * @see http://oli.me.uk/2013/06/01/prototypical-inheritance-done-right/
- * 
- * @param {Function} child: The class that should be inheriting things.
- * @param {Function} parent: The parent class that should be inherited from.
- * @return {Object} The prototype of the parent.
- */
-var extend = function(child, parent) {
-    child.prototype = Object.create(parent.prototype);
-    child.prototype.constructor = child;
-    return parent.prototype;
-};
-
-/**
- * Iterate through 2D Array and run a method, passing in the array and 2D index
- *
- * @param {Array.Array} array: array of arrays
- * @param {function(Array.Array.<number>, number, number)} method: method to run on each cell
- * @depends forEachIn2DArray
- */
-
-var forEachIn2DArray = function(array, method) {
-    for (var i = 0; i < array.length; i++) {
-        for (var j = 0; j < array[i].length; j++) {  
-            method(array, i, j);
-        }
-    }
-};
-
-/***************************************************************************************************
  * Namespace
  **************************************************************************************************/
 // https://javascriptweblog.wordpress.com/2010/12/07/namespacing-in-javascript/
@@ -59,6 +24,40 @@ var forEachIn2DArray = function(array, method) {
  */
 var gameOfLife = (function(){
     'use strict';
+    /***************************************************************************************************
+     * Helper Functions
+     **************************************************************************************************/
+     
+    /**
+     * Extends one class with another.
+     * 
+     * @see http://oli.me.uk/2013/06/01/prototypical-inheritance-done-right/
+     * 
+     * @param {Function} child: The class that should be inheriting things.
+     * @param {Function} parent: The parent class that should be inherited from.
+     * @return {Object} The prototype of the parent.
+     */
+    var extend = function(child, parent) {
+        child.prototype = Object.create(parent.prototype);
+        child.prototype.constructor = child;
+        return parent.prototype;
+    };
+
+    /**
+     * Iterate through 2D Array and run a method, passing in the array and 2D index
+     *
+     * @param {Array.Array} array: array of arrays
+     * @param {function(Array.Array.<number>, number, number)} method: method to run on each cell
+     * @depends forEachIn2DArray
+     */
+
+    var forEachIn2DArray = function(array, method) {
+        for (var i = 0; i < array.length; i++) {
+            for (var j = 0; j < array[i].length; j++) {  
+                method(array, i, j);
+            }
+        }
+    };
     /***********************************************************************************************
      * Constructors and Prototypes
      * ********************************************************************************************/
@@ -77,6 +76,8 @@ var gameOfLife = (function(){
     
     /**
      * Populate The Table Constructor using random values
+     *
+     * @depends {PVector} this.size
      * 
      * @return {Array.Array.<number>} : 2D array of cells of size this.size by this.size
      */
@@ -95,9 +96,11 @@ var gameOfLife = (function(){
     
     /**
      * Iterate through all cells and run a method, passing in the cells array and cell location
+     *
+     * @depends {Array.Array.<number>} this.cells
+     * @depends {Function} forEachIn2DArray
      * 
      * @param {function(Array.Array.<number>, number, number)} method: method to run on each cell
-     * @depends forEachIn2DArray
      */
     Table.prototype.forAllCells = function(method) {
         forEachIn2DArray(this.cells, method);
@@ -109,7 +112,6 @@ var gameOfLife = (function(){
      * @param {number} w: Width of array (number of columns)
      * @param {number} h: Height of array (number of rows)
      * @constructor
-     * @extends {Table}
      */
     var GameOfLife = function(w, h) {
         this.table = new Table(w, h);
@@ -125,6 +127,10 @@ var gameOfLife = (function(){
     /**
      * Update cells in the cells array according To the rules of Conway's Game of Life
      * @see https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+     *
+     * @depends {Table} this.table
+     * @depends {Array.Array.<number>} this.prevCells
+     * @depends {Array.Array.<number>} this.neighborCount
      * 
      */
     GameOfLife.prototype.update = function() {
@@ -139,6 +145,9 @@ var gameOfLife = (function(){
     
         /**
          * Reference states Enum to determine if given cell Value is alive
+         *
+         * @depends {Array.Array.<number>} game.table.cells
+         * 
          * @param  {number} cellValue: the value of a cell
          * @return {boolean} : whether or not cell is alive
          */
@@ -147,31 +156,40 @@ var gameOfLife = (function(){
         };
     
         /**
+         * @depends {Array.Array.<number>} game.table.cells
+         * 
          * @param  {string} state: the value of a cell
          */    
         var setCell = function (i, j, state) {
             game.table.cells[i][j] = states[state];
+        };
+
+        /**
+         * Roll over a value between min and max values
+         * 
+         * @param  {number} value : incoming value
+         * @param  {number} min : minimum value in range
+         * @param  {number} max : maximum value in range
+         * @return {number} newValue : rolled-over value
+         */                
+        var rollOverValue = function (value, min, max) {
+            var newValue = value < min? max + (value % max) + 1: (
+                        value > max? min + (value % max): value
+                    );            
+            return newValue;
         };
         
         /**
          * Count the neighbors of a given cell and return the count
          *
          * @depends {PVector} game.table.size
+         * @depends {Function} rollOverValue
+         * @depends {Function} isAlive
          * 
          * @param  {number} row : row in table
          * @param  {number} col : column in table
          * @return {number} : number of neighbors
          */
-        
-        var rollOverValue = function (value, min, max) {
-            var newValue = value < min? max + value + 1: (
-                        value > max? min + (value - max - 1): value
-                    );
-            //debug(value, 'new', newValue, 'min', min, max);
-            
-            return newValue;
-        };
-
         var countNeighbors = function(row, col) {
             var count = 0;
             //debug(table.size);
@@ -192,6 +210,7 @@ var gameOfLife = (function(){
             return count - isAlive(row, col);
         };
         
+        // store previous cells in table for display and analytics
         game.prevCells = game.table.cells;
         var newCells = [];
         var i, j;
@@ -214,6 +233,7 @@ var gameOfLife = (function(){
                 if (!game.neighborCount[i]) {
                     game.neighborCount[i] = [];
                 }
+                // store neighbor count in table for display and analytics
                 game.neighborCount[i][j] = neighbors;
             }
         }
@@ -222,13 +242,13 @@ var gameOfLife = (function(){
     
     /***********************************************************************************************
      * Render Functions
-     * ********************************************************************************************/
-     /**
-      * Render Table according to cell Values
-      * 
-      * @param  {Table|GameOfLife} table: Table or Table Child
-      * @param  {PVector}: Processing Vector of Size in pixels to render the table at
-      */
+     **********************************************************************************************/
+    /**
+     * Render Table according to cell Values
+     * 
+     * @param  {Table|GameOfLife} table: Table or Table Child
+     * @param  {PVector}: Processing Vector of Size in pixels to render the table at
+     */
     var renderGame = function(game) {
         var colors = {
             WHITE: color(255),      
