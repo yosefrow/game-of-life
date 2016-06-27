@@ -227,7 +227,23 @@ var renderGame = function(game) {
           var prevValue = prevCells[i][j];
           var born = (value > prevValue);
           var died = (value < prevValue);
-          fill(255*value, 100*value + 155*born, 100*value + 155*died);
+          var newColor = color(0);
+          
+          var colors = {
+              PINK: color(250, 130, 130),
+              BLUE: color(135, 139, 178),
+              YELLOW: color(253, 217, 39),
+              BLACK: color(0)
+          };
+          
+          newColor = born? colors.YELLOW: (
+                        died? colors.BLUE: (
+                            value? colors.PINK: 
+                                colors.BLACK
+                        )
+                    );
+          
+          fill(newColor);
           rect(cellSize.x * j, cellSize.y * i, cellSize.x, cellSize.y);
         }
     );
@@ -238,7 +254,7 @@ var renderGame = function(game) {
  * ************************************************************************************************/
 frameRate(refreshRate);
 
-var game = new GameOfLife(100, 100);
+var game = new GameOfLife(10, 10);
 
 /***************************************************************************************************
  * Event Handling
