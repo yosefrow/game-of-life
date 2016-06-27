@@ -230,9 +230,9 @@ var gameOfLife = (function(){
             prevCells = game.prevCells;
     
         var colors = {
-            PINK: color(250, 130, 130),
-            BLUE: color(135, 139, 178),
-            YELLOW: color(253, 217, 39),
+            WHITE: color(255),      
+            BLUE: color(15, 36, 74),
+            YELLOW: color(255, 246, 106),
             BLACK: color(0)
         };
           
@@ -252,7 +252,7 @@ var gameOfLife = (function(){
               
               newColor = born? colors.YELLOW: (
                             died? colors.BLUE: (
-                                value? colors.PINK: 
+                                value? colors.WHITE: 
                                     colors.BLACK
                             )
                         );
@@ -278,7 +278,7 @@ var gameOfLife = (function(){
  * ************************************************************************************************/
 frameRate(refreshRate);
 var game = {
-    instance: gameOfLife.create(20, 20),
+    instance: gameOfLife.create(100, 100),
     render: gameOfLife.render
 };
 
@@ -289,7 +289,7 @@ debug(game);
  * ************************************************************************************************/
 var draw = function() {
     game.render(game.instance, canvas.size);
-    //game.instance.update();
+    game.instance.update();
 };
 
 var mouseClicked = function() {
