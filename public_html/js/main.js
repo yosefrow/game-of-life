@@ -8,54 +8,60 @@ var canvas = {
 };
 
 /***************************************************************************************************
- * Game Module
- ***************************************************************************************************/
+ * Helper Functions
+ **************************************************************************************************/
+ 
+/**
+ * Extends one class with another.
+ * 
+ * @see http://oli.me.uk/2013/06/01/prototypical-inheritance-done-right/
+ * 
+ * @param {Function} child: The class that should be inheriting things.
+ * @param {Function} parent: The parent class that should be inherited from.
+ * @return {Object} The prototype of the parent.
+ */
+var extend = function(child, parent) {
+    child.prototype = Object.create(parent.prototype);
+    child.prototype.constructor = child;
+    return parent.prototype;
+};
+
+/**
+ * Iterate through 2D Array and run a method, passing in the array and 2D index
+ *
+ * @param {Array.Array} array: array of arrays
+ * @param {function(Array.Array.<number>, number, number)} method: method to run on each cell
+ * @depends forEachIn2DArray
+ */
+
+var forEachIn2DArray = function(array, method) {
+    for (var i = 0; i < array.length; i++) {
+        for (var j = 0; j < array[i].length; j++) {  
+            method(array, i, j);
+        }
+    }
+};
+
+/***************************************************************************************************
+ * Namespace
+ **************************************************************************************************/
+// https://javascriptweblog.wordpress.com/2010/12/07/namespacing-in-javascript/
+
+/**
+ * Conway's Game of Life
+ * @see /en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+ * @author Y H
+ * 
+ * @depends {Object{ size: PVector }} canvas
+ * @depends {Function} forEachIn2DArray
+ * @depends {Function} extend
+ *
+ */
 var gameOfLife = (function(){
     'use strict';
-    /**
-     * Conway's Game of Life
-     * @see /en.wikipedia.org/wiki/Conway%27s_Game_of_Life
-     *
-     * Word Wrap Column: 100
-     */
-    
-    /***************************************************************************************************
-     * Helper Functions
-     * ************************************************************************************************/
-    /**
-     * Extends one class with another.
-     * 
-     * @see http://oli.me.uk/2013/06/01/prototypical-inheritance-done-right/
-     * 
-     * @param {Function} child: The class that should be inheriting things.
-     * @param {Function} parent: The parent class that should be inherited from.
-     * @return {Object} The prototype of the parent.
-     */
-    var extend = function(child, parent) {
-        child.prototype = Object.create(parent.prototype);
-        child.prototype.constructor = child;
-        return parent.prototype;
-    };
-    
-    /**
-     * Iterate through 2D Array and run a method, passing in the array and 2D index
-     *
-     * @param {Array.Array} array: array of arrays
-     * @param {function(Array.Array.<number>, number, number)} method: method to run on each cell
-     * @depends forEachIn2DArray
-     */
-    
-    var forEachIn2DArray = function(array, method) {
-        for (var i = 0; i < array.length; i++) {
-            for (var j = 0; j < array[i].length; j++) {  
-                method(array, i, j);
-            }
-        }
-    };
-    
-    /***************************************************************************************************
+    /***********************************************************************************************
      * Constructors and Prototypes
-     * ************************************************************************************************/
+     * ********************************************************************************************/
     /**
      * Define Grid Constructor which holds 2D array of cells
      * 
@@ -65,29 +71,23 @@ var gameOfLife = (function(){
      */
     var Grid = function(w, h) {
         this.size = new PVector(w, h);
-        this.cells = this.populate('random');
+        this.cells = this.populateRandom();
         //debug(this.cells);
     };
     
     /**
      * Populate The Grid Constructor using random values
      * 
-     * @param {string} type: type of method to use as defined in methods
+     * @return {Array.Array.<number>} : 2D array of cells of size this.size by this.size
      */
-    Grid.prototype.populate = function(type) {
-        var cells = [],
-            methods = {
-                random: function() {
-                    return round(random(1));    
-                }
-            };
-    
+    Grid.prototype.populateRandom = function() {
+        var cells = [];
         for (var i = 0; i < this.size.y; i++) {
             for (var j = 0; j < this.size.x; j++) {
                 if (cells[i] === undefined) {
                     cells[i] = [];
                 }
-                cells[i][j] = methods[type]();
+                cells[i][j] = round(random(1));
             }
         }
         return cells;
@@ -104,30 +104,7 @@ var gameOfLife = (function(){
     };
     
     /**
-     * Recursively clone array and return clone 
-     * @see http://blog.andrewray.me/how-to-clone-a-nested-array-in-javascript/
-     * 
-     * @param  {Array} array: array to copy
-     * @return {Array} nested copy of array
-     */
-    var cloneArray = function(array) {
-        var i, copy;
-    
-        if( Array.isArray(array) ) {
-            copy = array.slice( 0 );
-            for(i = 0; i < copy.length; i++) {
-                copy[i] = cloneArray( copy[i] );
-            }
-            return copy;
-        } else if(typeof array === 'object') {
-            throw 'Cannot clone array containing an object!';
-        } else {
-            return array;
-        }
-    };
-    
-    /**
-     * Conway's Game of Life. Defined as constructor in order to allow instancing and fast initializing
+     * Conway's Game of Life. Defined as constructor in order to allow instancing and initializing
      * 
      * @param {number} w: Width of array (number of columns)
      * @param {number} h: Height of array (number of rows)
@@ -214,9 +191,9 @@ var gameOfLife = (function(){
         game.grid.cells = newCells;
     };
     
-    /***************************************************************************************************
+    /***********************************************************************************************
      * Render Functions
-     * ************************************************************************************************/
+     * ********************************************************************************************/
      /**
       * Render Grid according to cell Values
       * 
@@ -267,6 +244,7 @@ var gameOfLife = (function(){
         return new GameOfLife(w, h);
     };
     
+    // Namespace Exports
     return {
         create: createNewGame,
         render: renderGame
