@@ -1,21 +1,27 @@
 /**
  * Conway's Game of Life in P5.js
  *
- * @author  Yosef Harrow
+ * @author  Y H
  * @date    27/06/2016
  *
- * Generate a grid of random values (1|0) and play Conway's Game of Life 
+ * Generate a grid of random values (1 or 0) and play Conway's Game of Life 
  * according to the rules specified at /en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+ * 
+ * Interface: 
+ *      Left Mouse Button:  Pause/Start
+ *      Right Mouse Button: Start New Instance
  *
  * Color Codes: Orange:   Alive
  *              Yellow:   Born
  *              DarkBlue: Died
- *              DarkBlue: Dead
+ *              Black:    Dead
  * 
  */
 /***************************************************************************************************
  * Globals and Settings
  * ************************************************************************************************/
+ // We only make use of settings in render functions and export objects, both of which are seperate
+ // from the core functionality. This way the main part of the module is not dependent on settings
 var settings = {
     dimensions: {
         x: 50,           //   table x dimension: 3+
@@ -39,15 +45,20 @@ var canvas = {
 /**
  * Conway's Game of Life
  * @see /en.wikipedia.org/wiki/Conway%27s_Game_of_Life
- * @author Y H
  * 
- * @depends {Object{ size: PVector }} canvas
- * @depends {Function} forEachIn2DArray
- * @depends {Function} extend
+ * @depends p5.js
+ * @depends {
+ *      dimensions: {x: number, y: number},
+ *      refreshRate: number,
+ *      cellRoundness: number,
+ *      showBorder: boolean,
+ *      emitLight: number
+ * } settings
  *
  */
-var gameOfLife = (function(){
+var gameOfLife = (function(settings){
     'use strict';
+    //debug(settings);
     /***********************************************************************************************
      * Helper Functions
      **********************************************************************************************/
@@ -66,21 +77,6 @@ var gameOfLife = (function(){
         return parent.prototype;
     };
 
-    /**
-     * Iterate through 2D Array and run a method, passing in the array and 2D index
-     *
-     * @param {Array.Array} array: array of arrays
-     * @param {function(Array.Array.<number>, number, number)} method: method to run on each cell
-     * @depends forEachIn2DArray
-     */
-
-    var forEachIn2DArray = function(array, method) {
-        for (var i = 0; i < array.length; i++) {
-            for (var j = 0; j < array[i].length; j++) {  
-                method(array, i, j);
-            }
-        }
-    };
     /***********************************************************************************************
      * Constructors and Prototypes
      * ********************************************************************************************/
@@ -122,16 +118,22 @@ var gameOfLife = (function(){
      * Iterate through all cells and run a method, passing in the cells array and cell location
      *
      * @depends {Array.Array.<number>} this.cells
-     * @depends {Function} forEachIn2DArray
      * 
      * @param {function(Array.Array.<number>, number, number)} method: method to run on each cell
      */
     Table.prototype.forAllCells = function(method) {
-        forEachIn2DArray(this.cells, method);
+        for (var i = 0; i < this.cells.length; i++) {
+            for (var j = 0; j < this.cells[i].length; j++) {  
+                method(this.cells, i, j);
+            }
+        }
     };
     
     /**
-     * Conway's Game of Life. Defined as constructor in order to allow instancing and initializing
+     * Conway's Game of Life. 
+     * 
+     * Although we could theoretically define it as a regular object with nested functions, 
+     * We Defined it as constructor in order to allow easy instancing and re-initializing
      * 
      * @param {number} w: Width of table (number of columns)
      * @param {number} h: Height of table (number of rows)
@@ -159,6 +161,8 @@ var gameOfLife = (function(){
      */
     GameOfLife.prototype.update = function() {
         //debug('cells', this.cells, this.cells.length, this.size);
+        // We could expose all of these functions in the prototype, but it's probably better not to
+        // unless absolutely neccessary - since this game is potentially resource intensive.
         var game = this;
         
         // Enumerator for state of cell
@@ -223,15 +227,13 @@ var gameOfLife = (function(){
                     var newRow = rollOverValue(i, 0, game.table.dimensions.y-1);
                     var newCol = rollOverValue(j, 0, game.table.dimensions.x-1);
 
-                    if ( isAlive(newRow, newCol) ) {
-                        count++;
-                    }
+                    count += game.table.cells[newRow][newCol];
                 }
             }
             //debug('count', count);
             // we counted all cells including ourself, so exclude ourself now instead of
             // doing a logic check for every cell !(i === row && j === col)
-            return count - isAlive(row, col);
+            return count - game.table.cells[row][col];
         };
         
         // store previous cells in table for display and analytics
@@ -269,6 +271,12 @@ var gameOfLife = (function(){
      **********************************************************************************************/
     /**
      * Render Table according to cell Values
+     *
+     * @depends {{
+     *      showBorder: boolean, 
+     *      emitLight: number,
+     *      cellRoundness: number
+     * }} settings
      * 
      * @param  {Table|GameOfLife} table: Table or Table Child
      * @param  {PVector}: Processing Vector of Size in pixels to render the table at
@@ -333,40 +341,74 @@ var gameOfLife = (function(){
             }
         );
     };
-    
-    var createNewGame = function(w, h) {
-        return new GameOfLife(w, h);
+    /**
+     * Generate new instance of GameOfLife, passing it dimensions settings
+     *
+     * @depends {{dimensions}} settings
+     * 
+     * @return {GameOfLife}
+     */
+    var createNewGame = function() {
+        return new GameOfLife(settings.dimensions.x, settings.dimensions.y);
     };
-    
-    // Namespace Exports
+
+    // Setup Environment    
+    frameRate(settings.refreshRate);
+
+    // Export Public Attributes
     return {
-        create: createNewGame,
-        render: renderGame
+        instance: createNewGame(),
+
+        /**
+         * Update current instance
+         */
+        update: function() {
+            this.instance.update();
+        },
+
+        /*
+         * Render current instance
+         */
+        render: function() {
+            //debug('instance', this.instance);
+            renderGame(this.instance);
+            //debug('rendering');
+        },
+
+        /*
+         * Get new instance and load it
+         */
+        new: function() {
+          this.instance = createNewGame();
+        }
     };
-})();
+})(settings);
 
 /***************************************************************************************************
  * Initialize Program
  * ************************************************************************************************/
-frameRate(settings.refreshRate);
-var game = {
-    instance: gameOfLife.create(settings.dimensions.x, settings.dimensions.y),
-    render: gameOfLife.render
-};
 
-//debug(game);
+//debug(gameOfLife);
+var drawing = true;
 
 /***************************************************************************************************
  * Event Handling
  * ************************************************************************************************/
-var drawing = true;
+
 var draw = function() {
-    game.render(game.instance, canvas.size);
-    game.instance.update();
+    gameOfLife.render();
+    gameOfLife.update();
 };
 
 var mouseClicked = function() {
-    drawing = !drawing;
+    if (mouseButton === RIGHT) {
+        gameOfLife.new();
+        drawing = true;
+    }
+    else {
+        drawing = !drawing;
+    }
+    
     if (drawing) {
         loop();
     } else {
