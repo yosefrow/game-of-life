@@ -63,24 +63,24 @@ var gameOfLife = (function(){
      * Constructors and Prototypes
      * ********************************************************************************************/
     /**
-     * Define Grid Constructor which holds 2D array of cells
+     * Define Table Constructor which holds 2D array of cells
      * 
      * @param {number} w: Width of array (number of columns)
      * @param {number} h: Height of array (number of rows)
      * @constructor
      */
-    var Grid = function(w, h) {
+    var Table = function(w, h) {
         this.size = new PVector(w, h);
         this.cells = this.populateRandom();
         //debug(this.cells);
     };
     
     /**
-     * Populate The Grid Constructor using random values
+     * Populate The Table Constructor using random values
      * 
      * @return {Array.Array.<number>} : 2D array of cells of size this.size by this.size
      */
-    Grid.prototype.populateRandom = function() {
+    Table.prototype.populateRandom = function() {
         var cells = [];
         for (var i = 0; i < this.size.y; i++) {
             for (var j = 0; j < this.size.x; j++) {
@@ -99,7 +99,7 @@ var gameOfLife = (function(){
      * @param {function(Array.Array.<number>, number, number)} method: method to run on each cell
      * @depends forEachIn2DArray
      */
-    Grid.prototype.forAllCells = function(method) {
+    Table.prototype.forAllCells = function(method) {
         forEachIn2DArray(this.cells, method);
     };
     
@@ -109,11 +109,17 @@ var gameOfLife = (function(){
      * @param {number} w: Width of array (number of columns)
      * @param {number} h: Height of array (number of rows)
      * @constructor
-     * @extends {Grid}
+     * @extends {Table}
      */
     var GameOfLife = function(w, h) {
-        this.grid = new Grid(w, h);
-        this.prevCells = this.grid.cells;
+        this.table = new Table(w, h);
+        /* 
+         * The following 2 tables are not needed for calculation and are recorded for the sake of
+         * statistics and visualization. This way less computing must be done, but at the cost of
+         * more memory usage
+         */
+        this.prevCells = this.table.cells;
+        this.neighborCount = [];
     };
     
     /**
@@ -137,42 +143,61 @@ var gameOfLife = (function(){
          * @return {boolean} : whether or not cell is alive
          */
         var isAlive = function(row, col) {
-            return game.grid.cells[row][col] === states.ALIVE;
+            return game.table.cells[row][col] === states.ALIVE;
         };
     
         /**
-         * Reference states Enum to set a cell to a specific state 
          * @param  {string} state: the value of a cell
          */    
         var setCell = function (i, j, state) {
-            game.grid.cells[i][j] = states[state];
+            game.table.cells[i][j] = states[state];
         };
         
+        /**
+         * Count the neighbors of a given cell and return the count
+         *
+         * @depends {PVector} game.table.size
+         * 
+         * @param  {number} row : row in table
+         * @param  {number} col : column in table
+         * @return {number} : number of neighbors
+         */
+        
+        var rollOverValue = function (value, min, max) {
+            var newValue = value < min? max + value + 1: (
+                        value > max? min + (value - max - 1): value
+                    );
+            //debug(value, 'new', newValue, 'min', min, max);
+            
+            return newValue;
+        };
+
         var countNeighbors = function(row, col) {
             var count = 0;
-            //debug(grid.size);
+            //debug(table.size);
             var i, j;
             for (i = row - 1; i <= row + 1; i++) {
                 for (j = col - 1; j <= col + 1; j++) {
-                    if (
-                        !(i === row && j === col) &&  
-                        i >= 0 && i < game.grid.size.y && 
-                        j >= 0 && j < game.grid.size.x &&
-                        isAlive(i, j)
-                    ){
+                    var newRow = rollOverValue(i, 0, game.table.size.y-1);
+                    var newCol = rollOverValue(j, 0, game.table.size.x-1);
+
+                    if ( isAlive(newRow, newCol) ) {
                         count++;
                     }
                 }
             }
-            return count;
+            //debug('count', count);
+            // we counted all cells including ourself, so exclude ourself now instead of
+            // doing a logic check for every cell !(i === row && j === col)
+            return count - isAlive(row, col);
         };
         
-        this.prevCells = game.grid.cells;
+        game.prevCells = game.table.cells;
         var newCells = [];
         var i, j;
-        for (i = 0; i < game.grid.size.y; i++) {
-            for (j = 0; j < game.grid.size.x; j++) {
-                var value = game.grid.cells[i][j];
+        for (i = 0; i < game.table.size.y; i++) {
+            for (j = 0; j < game.table.size.x; j++) {
+                var value = game.table.cells[i][j];
                 var neighbors = countNeighbors(i, j);
                 if (isAlive(i, j)) {
                     if (neighbors < 2 || neighbors > 3) {
@@ -186,40 +211,52 @@ var gameOfLife = (function(){
                     newCells[i] = [];
                 }
                 newCells[i][j] = value;
+                if (!game.neighborCount[i]) {
+                    game.neighborCount[i] = [];
+                }
+                game.neighborCount[i][j] = neighbors;
             }
         }
-        game.grid.cells = newCells;
+        game.table.cells = newCells;
     };
     
     /***********************************************************************************************
      * Render Functions
      * ********************************************************************************************/
      /**
-      * Render Grid according to cell Values
+      * Render Table according to cell Values
       * 
-      * @param  {Grid|GameOfLife} grid: Grid or Grid Child
-      * @param  {PVector}: Processing Vector of Size in pixels to render the grid at
+      * @param  {Table|GameOfLife} table: Table or Table Child
+      * @param  {PVector}: Processing Vector of Size in pixels to render the table at
       */
     var renderGame = function(game) {
-        stroke(0);
-        strokeWeight(1);
-        var cellSize = PVector.div(canvas.size, game.grid.size),
-            prevCells = game.prevCells;
-    
         var colors = {
             WHITE: color(255),      
             BLUE: color(15, 36, 74),
             YELLOW: color(255, 246, 106),
             BLACK: color(0)
         };
-          
-        var value, 
-            prevValue, 
-            born, 
-            died, 
-            newColor;
+
+        // variables that go in the anonymous function are defined here as well, since the function
+        // will be run in a loop and we don't want to intialize them over and over
+        
+        var cellSize = PVector.div(canvas.size, game.table.size);
+        var prevCells = game.prevCells;
+        var neighbors = game.neighborCount;
+        
+        var value;
+        var prevValue;
+        var born; 
+        var died;
+        var newColor;
+        var neighbor;
+        var x;
+        var y;
+        
+        stroke(0);
+        strokeWeight(1);
             
-        game.grid.forAllCells( 
+        game.table.forAllCells( 
             function(cells, i, j) {
               value = cells[i][j];
               prevValue = prevCells[i][j];
@@ -235,7 +272,16 @@ var gameOfLife = (function(){
                         );
               
               fill(newColor);
-              rect(cellSize.x * j, cellSize.y * i, cellSize.x, cellSize.y);
+              x = cellSize.x * j;
+              y = cellSize.y * i;
+              rect(x, y, cellSize.x, cellSize.y);
+              if (false && neighbors.length > 0) {
+                  neighbor = neighbors[i][j];
+                  fill(255*!value);
+                  textSize(min(cellSize.x, cellSize.y));
+                  textAlign(CENTER, CENTER);
+                  text(neighbor, x + cellSize.x/2, y + cellSize.y/2);
+              }
             }
         );
     };
@@ -260,7 +306,7 @@ var game = {
     render: gameOfLife.render
 };
 
-debug(game);
+//debug(game);
 
 /***************************************************************************************************
  * Event Handling
