@@ -234,7 +234,8 @@ var gameOfLife = (function(){
             WHITE: color(255),      
             BLUE: color(15, 36, 74),
             YELLOW: color(255, 246, 106),
-            BLACK: color(0)
+            BLACK: color(0),
+            ORANGE: color(254, 163, 58)
         };
 
         // variables that go in the anonymous function are defined here as well, since the function
@@ -242,14 +243,14 @@ var gameOfLife = (function(){
         
         var cellSize = PVector.div(canvas.size, game.table.size);
         var prevCells = game.prevCells;
-        var neighbors = game.neighborCount;
+        var neighborCount = game.neighborCount;
         
         var value;
         var prevValue;
         var born; 
         var died;
         var newColor;
-        var neighbor;
+        var neighbors;
         var x;
         var y;
         
@@ -266,22 +267,22 @@ var gameOfLife = (function(){
               
               newColor = born? colors.YELLOW: (
                             died? colors.BLUE: (
-                                value? colors.WHITE: 
+                                value? colors.ORANGE: 
                                     colors.BLACK
                             )
                         );
-              
+
+              if (neighborCount.length > 0) {
+                neighbors = neighborCount[i][j];
+
+                var neighborFactor = neighbors / 8;
+                newColor = lerpColor(newColor, color(255), neighborFactor * 0.5);
+              }
+
               fill(newColor);
               x = cellSize.x * j;
               y = cellSize.y * i;
               rect(x, y, cellSize.x, cellSize.y);
-              if (false && neighbors.length > 0) {
-                  neighbor = neighbors[i][j];
-                  fill(255*!value);
-                  textSize(min(cellSize.x, cellSize.y));
-                  textAlign(CENTER, CENTER);
-                  text(neighbor, x + cellSize.x/2, y + cellSize.y/2);
-              }
             }
         );
     };
