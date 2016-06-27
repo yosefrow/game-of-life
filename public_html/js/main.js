@@ -1,7 +1,31 @@
+/**
+ * Conway's Game of Life in P5.js
+ *
+ * @author  Yosef Harrow
+ * @date    27/06/2016
+ *
+ * Generate a grid of random values (1|0) and play Conway's Game of Life 
+ * according to the rules specified at /en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+ *
+ * Color Codes: Orange:   Alive
+ *              Yellow:   Born
+ *              DarkBlue: Died
+ *              DarkBlue: Dead
+ * 
+ */
 /***************************************************************************************************
  * Globals and Settings
  * ************************************************************************************************/
-var refreshRate = 20;
+var settings = {
+    dimensions: {
+        x: 50,           //   table x dimension: 3+
+        y: 50            //   table y dimension: 3+
+    },
+    refreshRate: 20,     //  frames per second: 1-60 (recommended)
+    cellRoundness: 0.25, //     cell roundness: 0.0 - 1.0
+    showBorder: false,   //   show cell border: true, false
+    emitLight: 0.25      //  neighbor strength: 0.0 - 1.0
+};
 
 var canvas = {
     size: new PVector(width, height)
@@ -24,10 +48,9 @@ var canvas = {
  */
 var gameOfLife = (function(){
     'use strict';
-    /***************************************************************************************************
+    /***********************************************************************************************
      * Helper Functions
-     **************************************************************************************************/
-     
+     **********************************************************************************************/
     /**
      * Extends one class with another.
      * 
@@ -69,26 +92,27 @@ var gameOfLife = (function(){
      * @constructor
      */
     var Table = function(w, h) {
-        this.size = new PVector(w, h);
+        this.dimensions = new PVector(w, h);
         this.cells = this.populateRandom();
         //debug(this.cells);
     };
     
     /**
-     * Populate The Table Constructor using random values
+     * Generate table of cells using random values of size this.size by this.size
      *
-     * @depends {PVector} this.size
+     * @depends {PVector} this.size 
      * 
      * @return {Array.Array.<number>} : 2D array of cells of size this.size by this.size
      */
     Table.prototype.populateRandom = function() {
+        var cellCoverage = random(0.25, 0.75);
         var cells = [];
-        for (var i = 0; i < this.size.y; i++) {
-            for (var j = 0; j < this.size.x; j++) {
+        for (var i = 0; i < this.dimensions.y; i++) {
+            for (var j = 0; j < this.dimensions.x; j++) {
                 if (cells[i] === undefined) {
                     cells[i] = [];
                 }
-                cells[i][j] = round(random(1));
+                cells[i][j] = parseInt(random(1) > cellCoverage, 10);
             }
         }
         return cells;
@@ -109,8 +133,8 @@ var gameOfLife = (function(){
     /**
      * Conway's Game of Life. Defined as constructor in order to allow instancing and initializing
      * 
-     * @param {number} w: Width of array (number of columns)
-     * @param {number} h: Height of array (number of rows)
+     * @param {number} w: Width of table (number of columns)
+     * @param {number} h: Height of table (number of rows)
      * @constructor
      */
     var GameOfLife = function(w, h) {
@@ -182,7 +206,7 @@ var gameOfLife = (function(){
         /**
          * Count the neighbors of a given cell and return the count
          *
-         * @depends {PVector} game.table.size
+         * @depends {PVector} game.table.dimensions
          * @depends {Function} rollOverValue
          * @depends {Function} isAlive
          * 
@@ -192,12 +216,12 @@ var gameOfLife = (function(){
          */
         var countNeighbors = function(row, col) {
             var count = 0;
-            //debug(table.size);
+            //debug(table.dimensions);
             var i, j;
             for (i = row - 1; i <= row + 1; i++) {
                 for (j = col - 1; j <= col + 1; j++) {
-                    var newRow = rollOverValue(i, 0, game.table.size.y-1);
-                    var newCol = rollOverValue(j, 0, game.table.size.x-1);
+                    var newRow = rollOverValue(i, 0, game.table.dimensions.y-1);
+                    var newCol = rollOverValue(j, 0, game.table.dimensions.x-1);
 
                     if ( isAlive(newRow, newCol) ) {
                         count++;
@@ -214,8 +238,8 @@ var gameOfLife = (function(){
         game.prevCells = game.table.cells;
         var newCells = [];
         var i, j;
-        for (i = 0; i < game.table.size.y; i++) {
-            for (j = 0; j < game.table.size.x; j++) {
+        for (i = 0; i < game.table.dimensions.y; i++) {
+            for (j = 0; j < game.table.dimensions.x; j++) {
                 var value = game.table.cells[i][j];
                 var neighbors = countNeighbors(i, j);
                 if (isAlive(i, j)) {
@@ -260,8 +284,7 @@ var gameOfLife = (function(){
 
         // variables that go in the anonymous function are defined here as well, since the function
         // will be run in a loop and we don't want to intialize them over and over
-        
-        var cellSize = PVector.div(canvas.size, game.table.size);
+        var cellSize = PVector.div(canvas.size, game.table.dimensions);
         var prevCells = game.prevCells;
         var neighborCount = game.neighborCount;
         
@@ -276,7 +299,10 @@ var gameOfLife = (function(){
         
         stroke(0);
         strokeWeight(1);
-            
+        if (!settings.showBorder) {
+            noStroke();
+        }
+        background(colors.BLACK);
         game.table.forAllCells( 
             function(cells, i, j) {
               value = cells[i][j];
@@ -296,13 +322,14 @@ var gameOfLife = (function(){
                 neighbors = neighborCount[i][j];
 
                 var neighborFactor = neighbors / 8;
-                newColor = lerpColor(newColor, color(255), neighborFactor * 0.5);
+                newColor = lerpColor(newColor, colors.WHITE, neighborFactor * settings.emitLight);
               }
 
               fill(newColor);
-              x = cellSize.x * j;
               y = cellSize.y * i;
-              rect(x, y, cellSize.x, cellSize.y);
+              x = cellSize.x * j;
+              var cornerRadius = settings.cellRoundness * min(cellSize.x, cellSize.y);
+              rect(x, y, cellSize.x, cellSize.y, cornerRadius);
             }
         );
     };
@@ -321,9 +348,9 @@ var gameOfLife = (function(){
 /***************************************************************************************************
  * Initialize Program
  * ************************************************************************************************/
-frameRate(refreshRate);
+frameRate(settings.refreshRate);
 var game = {
-    instance: gameOfLife.create(100, 100),
+    instance: gameOfLife.create(settings.dimensions.x, settings.dimensions.y),
     render: gameOfLife.render
 };
 
@@ -332,11 +359,17 @@ var game = {
 /***************************************************************************************************
  * Event Handling
  * ************************************************************************************************/
+var drawing = true;
 var draw = function() {
     game.render(game.instance, canvas.size);
     game.instance.update();
 };
 
 var mouseClicked = function() {
-    game.instance.update();
+    drawing = !drawing;
+    if (drawing) {
+        loop();
+    } else {
+        noLoop();
+    }
 };
