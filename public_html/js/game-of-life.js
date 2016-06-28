@@ -43,7 +43,7 @@ void setup() { //jshint ignore:line
 // from the core functionality. This way the main part of the module is not dependent on settings
 var settings = {
     dimensions: {
-        x: 200,           //   table x dimension: 3+
+        x: 120,           //   table x dimension: 3+
         y: 'aspectRatio'  //   table y dimension: 3+ or 'aspectRatio'
     },
     refreshRate: 15,     //  frames per second: 1-60 (recommended)
