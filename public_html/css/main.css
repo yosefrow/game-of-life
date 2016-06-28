@@ -483,13 +483,6 @@ nav li {
 /*
     MOBILE: Main
  */
-/* http://stackoverflow.com/questions/13171968/magnifying-glass-zoom-cursor-over-image */
-
-.gallery img {
-    cursor: -moz-zoom-in;
-    cursor: -webkit-zoom-in;
-    cursor: zoom-in;
-}
 article {
     padding: 1% 5% 0 5%;
 }
@@ -517,16 +510,6 @@ div article div.heading {
     background-color: #1D4FAD;
     height: 53px;
     margin-top: 18px;
-}
-article .heading-accent {
-    z-index: 5;
-    position: absolute;
-    width: 93px;
-    height: 45px;
-    display: block;
-    right: 3%;
-    top: 0;
-    background-image: url('../img/angelos-swirl-color.png');
 }
 div article section {
     padding: 0;

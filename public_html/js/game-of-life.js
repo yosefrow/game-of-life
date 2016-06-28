@@ -60,7 +60,7 @@ if (settings.dimensions.y == 'aspectRatio') {
     var aspectRatio = canvas.size.y/canvas.size.x;
     settings.dimensions.y = round(settings.dimensions.x * aspectRatio);
 }
-console.log(settings.dimensions);
+//console.log(settings.dimensions);
 
 /**
  * Track Frame per Second at a particular average
@@ -115,7 +115,7 @@ var fps = {
  */
 var gameOfLife = (function(settings){
     'use strict';
-    //debug(settings);
+    //console.log(settings);
     /***********************************************************************************************
      * Helper Functions
      **********************************************************************************************/
@@ -147,7 +147,7 @@ var gameOfLife = (function(settings){
     var Table = function(w, h) {
         this.dimensions = new PVector(w, h);
         this.cells = this.populateRandom();
-        //debug(this.cells);
+        //console.log(this.cells);
     };
     
     /**
@@ -217,7 +217,7 @@ var gameOfLife = (function(settings){
      * 
      */
     GameOfLife.prototype.update = function() {
-        //debug('cells', this.cells, this.cells.length, this.size);
+        //console.log('cells', this.cells, this.cells.length, this.size);
         // We could expose all of these functions in the prototype, but it might save 
         // resources if we do it this way, and this game is resource intensive
         var game = this;
@@ -277,7 +277,7 @@ var gameOfLife = (function(settings){
          */
         var countNeighbors = function(row, col) {
             var count = 0;
-            //debug(table.dimensions);
+            //console.log(table.dimensions);
             var i, j;
             for (i = row - 1; i <= row + 1; i++) {
                 for (j = col - 1; j <= col + 1; j++) {
@@ -287,7 +287,7 @@ var gameOfLife = (function(settings){
                     count += game.table.cells[newRow][newCol];
                 }
             }
-            //debug('count', count);
+            //console.log('count', count);
             // we counted all cells including ourself, so exclude ourself now instead of
             // doing a logic check for every cell !(i === row && j === col)
             return count - game.table.cells[row][col];
@@ -460,14 +460,13 @@ var gameOfLife = (function(settings){
          * Render current instance
          */
         render: function() {
-            //debug('instance', this.instance);
+            //console.log('instance', this.instance);
             renderGame(this.instance);
             //console.log(fps.current);
-            //debug('rendering');
+            //console.log('rendering');
             if (optimizing) {
                 renderOverlay('Optimizing ...', canvas.size.x/2, canvas.size.y/2);
-
-                if (frameCount > 100) {
+                if (frameCount > fps.framesToAverage) {
                     optimizing = false;
                 }
             }
@@ -487,7 +486,7 @@ var gameOfLife = (function(settings){
  * Initialize Program
  * ************************************************************************************************/
 
-//debug(gameOfLife);
+//console.log(gameOfLife);
 var drawing = true;
 
 /***************************************************************************************************
