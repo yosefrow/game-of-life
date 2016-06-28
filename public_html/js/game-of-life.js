@@ -36,17 +36,8 @@ else {
     canvas.size = new PVector(gCanvas.width, gCanvas.height);
 }
 
-// some pre-built methods make use of width/height, so we define it here. the size PVector is 
-// preferable though, because it allows for vector calculations
-var width = canvas.size.x;
-var height = canvas.size.y;
-
-void setup() { //jshint ignore:line
-    size(canvas.size.x, canvas.size.y);
-}; //jshint ignore:line
-
- // We only make use of settings in render functions and export objects, both of which are seperate
- // from the core functionality. This way the main part of the module is not dependent on settings
+// We only make use of settings in render functions and export objects, both of which are seperate
+// from the core functionality. This way the main part of the module is not dependent on settings
 var settings = {
     dimensions: {
         x: 100,           //   table x dimension: 3+
@@ -58,12 +49,11 @@ var settings = {
     emitLight: 0.25      //  neighbor strength: 0.0 - 1.0
 };
 
-if (settings.dimensions.y == 'aspectRatio') {
-    var aspectRatio = canvas.size.y/canvas.size.x;
-    settings.dimensions.y = round(settings.dimensions.x * aspectRatio);
-}
 //console.log(settings.dimensions);
 
+/***************************************************************************************************
+ * Helper Objects
+ **************************************************************************************************/
 /**
  * Track Frame per Second at a particular average
  * 
@@ -126,7 +116,6 @@ var keyboard = {
     }
 };
 
-
 /***************************************************************************************************
  * Namespace
  **************************************************************************************************/
@@ -151,24 +140,6 @@ var keyboard = {
 var gameOfLife = (function(settings){
     'use strict';
     //console.log(settings);
-    /***********************************************************************************************
-     * Helper Functions
-     **********************************************************************************************/
-    /**
-     * Extends one class with another.
-     * 
-     * @see http://oli.me.uk/2013/06/01/prototypical-inheritance-done-right/
-     * 
-     * @param {Function} child: The class that should be inheriting things.
-     * @param {Function} parent: The parent class that should be inherited from.
-     * @return {Object} The prototype of the parent.
-     */
-    var extend = function(child, parent) {
-        child.prototype = Object.create(parent.prototype);
-        child.prototype.constructor = child;
-        return parent.prototype;
-    };
-
     /***********************************************************************************************
      * Constructors and Prototypes
      * ********************************************************************************************/
@@ -272,7 +243,7 @@ var gameOfLife = (function(settings){
          * @return {boolean} : whether or not cell is alive
          */
         var isAlive = function(row, col) {
-            return game.table.cells[row][col] === states.ALIVE;
+            return getCell(row, col) === states.ALIVE;
         };
     
         /**
@@ -280,8 +251,8 @@ var gameOfLife = (function(settings){
          * 
          * @param  {string} state: the value of a cell
          */    
-        var setCell = function (i, j, state) {
-            game.table.cells[i][j] = states[state];
+        var getCell = function(row, col) {
+            return game.table.cells[row][col];
         };
 
         /**
@@ -305,6 +276,7 @@ var gameOfLife = (function(settings){
          * @depends {PVector} game.table.dimensions
          * @depends {Function} rollOverValue
          * @depends {Function} isAlive
+         * @depends {Function} getCell
          * 
          * @param  {number} row : row in table
          * @param  {number} col : column in table
@@ -319,13 +291,13 @@ var gameOfLife = (function(settings){
                     var newRow = rollOverValue(i, 0, game.table.dimensions.y-1);
                     var newCol = rollOverValue(j, 0, game.table.dimensions.x-1);
 
-                    count += game.table.cells[newRow][newCol];
+                    count += getCell(newRow, newCol);
                 }
             }
             //console.log('count', count);
             // we counted all cells including ourself, so exclude ourself now instead of
             // doing a logic check for every cell !(i === row && j === col)
-            return count - game.table.cells[row][col];
+            return count - getCell(row, col);
         };
         
         // store previous cells in table for display and analytics
@@ -334,7 +306,7 @@ var gameOfLife = (function(settings){
         var i, j;
         for (i = 0; i < game.table.dimensions.y; i++) {
             for (j = 0; j < game.table.dimensions.x; j++) {
-                var value = game.table.cells[i][j];
+                var value = getCell(i, j);
                 var neighbors = countNeighbors(i, j);
                 if (isAlive(i, j)) {
                     if (neighbors < 2 || neighbors > 3) {
@@ -483,7 +455,7 @@ var gameOfLife = (function(settings){
         update: function() {
             this.instance.update();
             if (fps.current > 0 && fps.current < settings.refreshRate*0.9)  {
-                var performanceFactor = fps.current/settings.refreshRate
+                var performanceFactor = fps.current/settings.refreshRate;
                 settings.dimensions.x = round(settings.dimensions.x * performanceFactor);
                 settings.dimensions.y = round(settings.dimensions.y * performanceFactor);
                 fps.reset();
@@ -538,7 +510,14 @@ var gameOfLife = (function(settings){
 /***************************************************************************************************
  * Initialize Program
  * ************************************************************************************************/
+void setup() { //jshint ignore:line
+    size(canvas.size.x, canvas.size.y);
+}; //jshint ignore:line
 
+if (settings.dimensions.y == 'aspectRatio') {
+    var aspectRatio = canvas.size.y/canvas.size.x;
+    settings.dimensions.y = round(settings.dimensions.x * aspectRatio);
+}
 //console.log(gameOfLife);
 var drawing = true;
 
@@ -546,14 +525,14 @@ var drawing = true;
  * Event Handling
  * ************************************************************************************************/
 
-void draw() {
+void draw() { //jshint ignore:line
     fps.update();
     gameOfLife.update();
 
     gameOfLife.render();
-};
+}; //jshint ignore:line
 
-void mouseClicked() {
+void mouseClicked() { //jshint ignore:line
     if (mouseButton === RIGHT) {
         gameOfLife.initialize();
         drawing = true;
@@ -568,7 +547,7 @@ void mouseClicked() {
     } else {
         noLoop();
     }
-};
+}; //jshint ignore:line
 
 void keyPressed() { // jshint ignore:line
     keyboard.setKey(key, true);
@@ -581,8 +560,8 @@ void keyPressed() { // jshint ignore:line
         gameOfLife.showLast();
         gameOfLife.render();
     }
-};
+}; //jshint ignore:line
 
 void keyReleased() { // jshint ignore:line
     keyboard.setKey(key, false);
-};
+}; //jshint ignore:line
