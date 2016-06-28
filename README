@@ -11,7 +11,7 @@ Interface:
    Right Mouse Button: Start New Instance
 
 Color Codes: 
-	Orange:   Alive
+    Orange:   Alive
     Yellow:   Born
     DarkBlue: Died
     Black:    Dead
