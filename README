@@ -9,7 +9,6 @@ according to the rules specified at http://en.wikipedia.org/wiki/Conway%27s_Game
 **Interface:** 
 	**Left Mouse Button:**  Pause/Start
 	**Right Mouse Button:** Start New Instance
-	**Left Arrow Key:** 	Last State (1 state back only)
 	**Right Arrow Key:** 	Next State (Get Next Generation)
 
 **Color Codes**: 

@@ -12,7 +12,6 @@
  * Interface: 
  *      Left Mouse Button:  Pause/Start
  *      Right Mouse Button: Start New Instance
- *      Left Key: Last State (limited to just the last state)
  *      Right Key: Next Update
  *
  * Color Codes: 
@@ -495,16 +494,6 @@ var gameOfLife = (function(settings){
         },
 
         /**
-         * Rewind to previous cell state 
-         */
-        showLast: function() {
-            // some tuples would have been nice here
-            var lastCells = this.instance.prevCells;
-            this.instance.prevCells = this.instance.table.cells;
-            this.instance.table.cells = lastCells;
-        },
-
-        /**
          * Get new instance and load it
          *
          * @depends {Function} createNewGame
@@ -556,10 +545,6 @@ void keyPressed() { // jshint ignore:line
 
     if ( keyboard.getKey(RIGHT) ) {
         gameOfLife.update();
-        gameOfLife.render();
-    }
-    else if ( keyboard.getKey(LEFT) ) {
-        gameOfLife.showLast();
         gameOfLife.render();
     }
 }; //jshint ignore:line
