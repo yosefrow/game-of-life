@@ -168,7 +168,7 @@ var gameOfLife = (function(settings){
     /**
      * Generate table of cells using random values of size this.size by this.size
      *
-     * @depends {PVector} this.size 
+     * @depends {PVector} this.dimensions 
      * 
      * @return {Array.Array.<number>} : 2D array of cells of size this.size by this.size
      */
@@ -246,7 +246,7 @@ var gameOfLife = (function(settings){
         /**
          * Reference states Enum to determine if given cell Value is alive
          *
-         * @depends {Array.Array.<number>} game.table.cells
+         * @depends {Function} : getCell
          * 
          * @param  {number} cellValue: the value of a cell
          * @return {boolean} : whether or not cell is alive
