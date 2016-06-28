@@ -1,1 +1,18 @@
-Game of Life
+Conway's Game of Life
+
+@author  Y H
+@date    27/06/2016
+
+Generate a grid of random values (1 or 0) and play Conway's Game of Life 
+according to the rules specified at /en.wikipedia.org/wiki/Conway%27s_Game_of_Life
+
+Interface: 
+   Left Mouse Button:  Pause/Start
+   Right Mouse Button: Start New Instance
+
+Color Codes: 
+	Orange:   Alive
+    Yellow:   Born
+    DarkBlue: Died
+    Black:    Dead
+

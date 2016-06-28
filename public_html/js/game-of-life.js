@@ -1,31 +1,54 @@
 /**
- * Conway's Game of Life in P5.js
+ * Conway's Game of Life in processing.js
  *
  * @author  Y H
  * @date    27/06/2016
  *
- * Generate a grid of random values (1 or 0) and play Conway's Game of Life 
+ * @depends processing.js
+ *
+ * @desc Generate a grid of random values (1 or 0) and play Conway's Game of Life 
  * according to the rules specified at /en.wikipedia.org/wiki/Conway%27s_Game_of_Life
  * 
  * Interface: 
  *      Left Mouse Button:  Pause/Start
  *      Right Mouse Button: Start New Instance
  *
- * Color Codes: Orange:   Alive
- *              Yellow:   Born
- *              DarkBlue: Died
- *              Black:    Dead
- * 
+ * Color Codes: 
+ *      Orange:   Alive
+ *      Yellow:   Born
+ *      DarkBlue: Died
+ *      Black:    Dead
+ *
+ * Code Columns: 100
  */
 /***************************************************************************************************
  * Globals and Settings
  * ************************************************************************************************/
+// width and height are re-defined as a PVector via the canvas global gCanvas
+// define canvas if we didn't define it previously
+var canvas = {};
+if (typeof gCanvas === 'undefined') {
+    canvas.size = new PVector(400, 400);
+}
+else {
+    canvas.size = new PVector(gCanvas.width, gCanvas.height);
+}
+
+// some pre-built methods make use of width/height, so we define it here. the size PVector is 
+// preferable though, because it allows for vector calculations
+var width = canvas.size.x;
+var height = canvas.size.y;
+
+void setup() { //jshint ignore:line
+    size(canvas.size.x, canvas.size.y);
+}; //jshint ignore:line
+
  // We only make use of settings in render functions and export objects, both of which are seperate
  // from the core functionality. This way the main part of the module is not dependent on settings
 var settings = {
     dimensions: {
-        x: 50,           //   table x dimension: 3+
-        y: 50            //   table y dimension: 3+
+        x: 100,           //   table x dimension: 3+
+        y: 'aspectRatio'  //   table y dimension: 3+ or 'aspectRatio'
     },
     refreshRate: 20,     //  frames per second: 1-60 (recommended)
     cellRoundness: 0.25, //     cell roundness: 0.0 - 1.0
@@ -33,8 +56,40 @@ var settings = {
     emitLight: 0.25      //  neighbor strength: 0.0 - 1.0
 };
 
-var canvas = {
-    size: new PVector(width, height)
+if (settings.dimensions.y == 'aspectRatio') {
+    var aspectRatio = canvas.size.y/canvas.size.x;
+    settings.dimensions.y = round(settings.dimensions.x * aspectRatio);
+}
+console.log(settings.dimensions);
+
+/**
+ * Track Frame per Second at a particular average
+ * 
+ * @type {Object}
+ */
+var fps = {
+    current: 0,
+    frameStart: millis(),
+    framesToAverage: 60,
+    /**
+     * Update frames.current value according to this.framesToAverage
+     */
+    update: function(/*interval*/) {
+        // measure fps every set number of frames. 50 in this case
+        if (frameCount % this.framesToAverage === 0) {
+            // divide number of sampled frames by actual seconds passed
+            var secondsElapsed = (millis() - this.frameStart) / 1000;
+            this.current = round(this.framesToAverage/secondsElapsed);
+            this.frameStart = millis();
+        }
+    },
+    /**
+     * Reset frame tracking
+     */
+    reset : function() {
+        this.frameStart = millis();
+        this.current = 0;
+    }
 };
 
 /***************************************************************************************************
@@ -46,7 +101,7 @@ var canvas = {
  * Conway's Game of Life
  * @see /en.wikipedia.org/wiki/Conway%27s_Game_of_Life
  * 
- * @depends p5.js
+ * @depends js/vendor/processing.js
  * @depends {
  *      dimensions: {x: number, y: number},
  *      refreshRate: number,
@@ -54,7 +109,9 @@ var canvas = {
  *      showBorder: boolean,
  *      emitLight: number
  * } settings
- *
+ * 
+ * @depends {Object} fps
+ * @type {Object}
  */
 var gameOfLife = (function(settings){
     'use strict';
@@ -143,7 +200,7 @@ var gameOfLife = (function(settings){
         this.table = new Table(w, h);
         /* 
          * The following 2 tables are not needed for calculation and are recorded for the sake of
-         * statistics and visualization. This way less computing must be done, but at the cost of
+         * statistics and visualization. This way less computing might be done, but at the cost of
          * more memory usage
          */
         this.prevCells = this.table.cells;
@@ -161,8 +218,8 @@ var gameOfLife = (function(settings){
      */
     GameOfLife.prototype.update = function() {
         //debug('cells', this.cells, this.cells.length, this.size);
-        // We could expose all of these functions in the prototype, but it's probably better not to
-        // unless absolutely neccessary - since this game is potentially resource intensive.
+        // We could expose all of these functions in the prototype, but it might save 
+        // resources if we do it this way, and this game is resource intensive
         var game = this;
         
         // Enumerator for state of cell
@@ -269,6 +326,24 @@ var gameOfLife = (function(settings){
     /***********************************************************************************************
      * Render Functions
      **********************************************************************************************/
+
+    var colors = {
+        WHITE: color(255),      
+        BLUE: color(15, 36, 74),
+        YELLOW: color(255, 246, 106),
+        BLACK: color(0),
+        ORANGE: color(254, 163, 58)
+    };
+
+    var renderOverlay = function(message, x, y) {
+        fill(0, 150);
+        rect(0, 0, canvas.size.x, canvas.size.y);
+        textAlign(CENTER, CENTER);
+        fill(colors.black);
+        textSize(canvas.size.x * 0.02);
+        text(message, x, y);
+    };
+
     /**
      * Render Table according to cell Values
      *
@@ -280,18 +355,13 @@ var gameOfLife = (function(settings){
      * 
      * @param  {Table|GameOfLife} table: Table or Table Child
      * @param  {PVector}: Processing Vector of Size in pixels to render the table at
+     *
+     * @depends {Object} colors: Enumerator object for colors
      */
     var renderGame = function(game) {
-        var colors = {
-            WHITE: color(255),      
-            BLUE: color(15, 36, 74),
-            YELLOW: color(255, 246, 106),
-            BLACK: color(0),
-            ORANGE: color(254, 163, 58)
-        };
-
         // variables that go in the anonymous function are defined here as well, since the function
         // will be run in a loop and we don't want to intialize them over and over
+
         var cellSize = PVector.div(canvas.size, game.table.dimensions);
         var prevCells = game.prevCells;
         var neighborCount = game.neighborCount;
@@ -338,6 +408,16 @@ var gameOfLife = (function(settings){
               x = cellSize.x * j;
               var cornerRadius = settings.cellRoundness * min(cellSize.x, cellSize.y);
               rect(x, y, cellSize.x, cellSize.y, cornerRadius);
+
+              // Uncomment this block to see the neighbor count displayed
+              // We could have set it as an option, but we are trying to save resources
+              /*
+                textAlign(CENTER, CENTER);
+                fill(255*!value)
+                textSize( min(cellSize.x, cellSize.y) * 0.8);
+                text(neighbors, x + cellSize.x/2, y + cellSize.y / 2); 
+              */
+
             }
         );
     };
@@ -354,9 +434,10 @@ var gameOfLife = (function(settings){
 
     // Setup Environment    
     frameRate(settings.refreshRate);
+    var optimizing = true;
 
     // Export Public Attributes
-    return {
+    var exports = {
         instance: createNewGame(),
 
         /**
@@ -364,6 +445,15 @@ var gameOfLife = (function(settings){
          */
         update: function() {
             this.instance.update();
+            fps.update();
+            if (fps.current > 0 && fps.current < settings.refreshRate*0.9)  {
+                var performanceFactor = fps.current/settings.refreshRate
+                settings.dimensions.x = round(settings.dimensions.x * performanceFactor);
+                settings.dimensions.y = round(settings.dimensions.y * performanceFactor);
+                fps.reset();
+                this.renew();
+                optimizing = true;
+            }
         },
 
         /*
@@ -372,16 +462,25 @@ var gameOfLife = (function(settings){
         render: function() {
             //debug('instance', this.instance);
             renderGame(this.instance);
+            //console.log(fps.current);
             //debug('rendering');
+            if (optimizing) {
+                renderOverlay('Optimizing ...', canvas.size.x/2, canvas.size.y/2);
+
+                if (frameCount > 100) {
+                    optimizing = false;
+                }
+            }
         },
 
         /*
          * Get new instance and load it
          */
-        new: function() {
+        renew: function() {
           this.instance = createNewGame();
         }
     };
+    return exports;
 })(settings);
 
 /***************************************************************************************************
@@ -395,14 +494,14 @@ var drawing = true;
  * Event Handling
  * ************************************************************************************************/
 
-var draw = function() {
+void draw() {
     gameOfLife.render();
     gameOfLife.update();
 };
 
-var mouseClicked = function() {
+void mouseClicked() {
     if (mouseButton === RIGHT) {
-        gameOfLife.new();
+        gameOfLife.renew();
         drawing = true;
     }
     else {
@@ -410,7 +509,8 @@ var mouseClicked = function() {
     }
     
     if (drawing) {
-        loop();
+        loop();        
+        fps.reset();
     } else {
         noLoop();
     }

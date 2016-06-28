@@ -1,0 +1,200 @@
+<!doctype html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7" lang=""> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8" lang=""> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9" lang=""> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" lang="en">
+<!--<![endif]-->
+
+<head>
+    <!-- basic data -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name=viewport content="width=device-width, initial-scale=1">
+    <meta name="google-site-verification" content="0CT6EBi3raYqp-Wgnit_eiHG-XALVvbwNYJh_pcpxJ0" />
+
+    <title>Conway's Game Of Life | Chromavant | Creative Solutions for Inspiring Challenges</title>
+    <meta name="description" content="Conway's Game Of Life | Chromavant | Creative Solutions for Inspiring Challenges">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <link rel="shortcut icon" href="favicon.ico?v=5" />
+
+    <!-- schema data -->
+    <meta itemprop="name" content="Conway's Game Of Life | Chromavant | Creative Solutions for Inspiring Challenges">
+    <meta itemprop="description" content="Conway's Game Of Life | Chromavant | Creative Solutions for Inspiring Challenges">
+    <meta itemprop="image" content="http://chromavant.com/img/full-logo.png">
+
+    <!-- Open Graph data -->
+    <meta property="og:title" content="Conway's Game Of Life | Chromavant | Creative Solutions for Inspiring Challenges" />
+    <meta property="og:url" content="http://www.chromavant.com" />
+    <meta property="og:image" content="http://www.chromavant.com/img/full-logo.png" />
+    <meta property="og:description" content="Conway's Game Of Life | Chromavant | Creative Solutions for Inspiring Challenges" />
+    <meta property="og:site_name" content="Chromavant" />
+
+    <!-- <link href='//fonts.googleapis.com/css?family=Lato:300,400' rel='stylesheet' type='text/css'> -->
+
+    <!-- CSS and Scripts -->
+    <link href='https://fonts.googleapis.com/css?family=Raleway:400,300' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="css/vendor/normalize.min.css">
+    <link rel="stylesheet" media="screen" type="text/css" href="css/main.css?v=1">
+    </style>
+    <style>
+       	canvas {
+       		top: 0;
+            left: 0;
+       	}
+       	.controls-info, div.banner {
+            position: absolute;
+            top: 0px;
+            left: 30px;
+            z-index: 2;
+            opacity: 1.0;
+       	}
+        
+        .background {
+            display: block;
+            top: 0;
+            left: 0;
+            position: absolute;
+            height: 100%;
+            width: 100%;
+            background: black;
+            border: 1px white dotted;
+            opacity: 0.7;
+            z-index: -1;
+        }
+
+        .controls-info {      
+            margin-top: 35px;     
+            padding: 30px;
+        }
+
+        .controls-info ul {
+            list-style-type: none;
+        }
+
+       	.controls-info li {
+       		float: none;
+       	}
+
+        body > header {  
+            position: relative;         
+            height: auto;
+            width: 100%;
+            padding-left: 60px;
+            padding: 30px;
+        }
+
+        header h1 {
+            margin: 0;
+        }
+
+        header a, header a:visited {
+            color: white;
+        }
+    </style>
+    <!--[if lte IE 9]>
+        <style>
+        <![endif]-->
+    <!-- Modernizr must come last -->
+    <script src="js/vendor/custom-modernizr.min.js"></script>
+    <script src="js/vendor/processing.js"></script>
+</head>
+
+<body>
+    <script>
+        // gCanvas variable optinally read by processing.js script
+        var gCanvas = {
+            width: window.innerWidth,
+            height: window.innerHeight
+        };
+    </script>
+    <!--[if lte IE 8]>
+            <p class="browserupgrade">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
+      <![endif]-->
+    <header class="container dark-blue-gradient">
+        <a href="index.html" class="align-left">
+            <h1>
+                Conway's Game Of Life
+            </h1>
+        </a>
+    </header>
+
+    <div class="main container full-width">
+        <div>
+            <canvas width="400" height="400" data-processing-sources="js/game-of-life.js"></canvas>
+        </div>
+
+    	<div class="controls-info pull-left">
+            <div class="background"></div>
+			<h3> Controls: </h3>
+			<br>
+	    	<ul>
+	        	<li>Pause/Play: Left Click </li>
+	        	<li>Start Over: Right Click </li>
+	        </ul> 
+    	</div>
+		<div class="pull-left">
+		</div>
+
+    </div>
+    <!-- #main-container -->
+    <footer class="container">
+            <div class="bottom-left"><a href="mailto:chromavant@gmail.com">Contact Webmaster</a></div>
+            <div class="bottom-left"><a href="http://www.chromavant.com">&copy; Chromavant 2016</a></div>
+
+    </footer>
+    <!-- Scripts block parallel downloads and should usually be loaded last-->
+    <!-- http://stackoverflow.com/questions/2105327/should-jquery-code-go-in-header-or-footer -->
+    <!--[if lt IE 9]>
+        <script src="http://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <![endif]-->
+    <!--[if gte IE 9]><!-->
+        <script src="js/vendor/jquery-2.2.4.min.js"></script>
+    <!--<![endif]-->  
+    <script>
+        var mobileImageSwap = function(id) {
+            if ($("#mobile-menu-button").is(":visible")) {
+                $("#" + id).attr("src", "img/" + id + "-mobile.jpg");
+            } else {
+                $("#" + id).attr("src", "img/" + id + "-main.jpg");
+            }
+        };
+
+        $(document).ready(function() {
+            //mobileImageSwap();
+            /*var windowHeight = $(window).height();
+            $('.main.container').css({height: windowHeight});*/
+        });
+
+        $(window).resize(function() {
+            //mobileImageSwap();
+        });
+
+        /*$(window).resize(function(){
+            clearTimeout($.data(this, 'resizeTimer'));
+            $.data(this, 'resizeTimer', setTimeout(function() {
+                data.next();
+           }, 5));
+        });*/
+    </script>
+
+    <!-- Google Analytics: change UA-XXXXX-X to be your site's ID. -->
+    <script>
+        /*(function(i, s, o, g, r, a, m) {
+            i['GoogleAnalyticsObject'] = r;
+            i[r] = i[r] || function() {
+                (i[r].q = i[r].q || []).push(arguments)
+            }, i[r].l = 1 * new Date();
+            a = s.createElement(o),
+                m = s.getElementsByTagName(o)[0];
+            a.async = 1;
+            a.src = g;
+            m.parentNode.insertBefore(a, m)
+        })(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+        ga('create', 'UA-72163897-1', 'auto');
+        ga('send', 'pageview');*/
+    </script>
+</body>
+
+</html>

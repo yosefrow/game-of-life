@@ -1,0 +1,917 @@
+/*
+ * Includes cross-browser stylingby Nicolas Gallagher, Jonathan Neal,
+ * Kroc Camen, and the H5BP dev community and team.
+ */
+
+
+/*
+   Base styles:
+ */
+
+html {
+    color: #222;
+    font-size: 16px;
+    line-height: 1.4;
+    width: 100%;
+    height: 100%;
+}
+
+/* adapt the easier to use box-sizing method */
+
+*, *:before, *:after {
+    box-sizing: border-box;
+    -webkit-box-sizing: border-box;
+    -moz-box-sizing: border-box;
+}
+
+/* remove default margin and padding */
+
+* {
+    padding: 0;
+    margin: 0;
+}
+
+/*
+ * Remove text-shadow in selection highlight:
+ * https://twitter.com/miketaylr/status/12228805301
+ * These selection rule sets have to be separate.
+ */
+
+::-moz-selection {
+    background: #b3d4fc;
+    text-shadow: none;
+}
+::selection {
+    background: #b3d4fc;
+    text-shadow: none;
+}
+
+/* http://stackoverflow.com/questions/826782/css-rule-to-disable-text-selection-highlighting*/
+
+.noselect {
+    -webkit-touch-callout: none;
+    /* iOS Safari */
+    -webkit-user-select: none;
+    /* Chrome/Safari/Opera */
+    -khtml-user-select: none;
+    /* Konqueror */
+    -moz-user-select: none;
+    /* Firefox */
+    -ms-user-select: none;
+    /* Internet Explorer/Edge */
+    user-select: none;
+    /* Non-prefixed version, currently
+                                  not supported by any browser */
+}
+
+/*
+ * A better looking default horizontal rule
+ */
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #ccc;
+    margin: 1em 0;
+    padding: 0;
+}
+
+/*
+ * Remove gap between elements and the bottom of their containers:
+ * https://github.com/h5bp/html5-boilerplate/issues/440
+ */
+
+audio, canvas, iframe, img, svg, video {
+    vertical-align: middle;
+}
+
+/*
+ * Remove default fieldset styles.
+ */
+
+fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/*
+ * Allow only vertical resizing of textareas.
+ */
+
+textarea {
+    resize: vertical;
+}
+
+/*
+   Browser Upgrade Prompt
+ */
+
+.browserupgrade {
+    margin: 0.2em 0;
+    background: #ccc;
+    color: #000;
+    padding: 0.2em 0;
+}
+
+/*
+ * Helper classes
+ */
+
+
+/*
+ * Hide visually and from screen readers:
+ */
+
+.hidden, .medium-only, .large-only {
+    display: none !important;
+    visibility: hidden;
+    /* is this line needed? */
+}
+
+/*
+ * Hide only visually, but have it available for screen readers:
+ * http://snook.ca/archives/html_and_css/hiding-content-for-accessibility
+ */
+
+.visuallyhidden {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+}
+
+/*
+ * Extends .visuallyhidden class to allow focus during keyboard navigation
+ * https://www.drupal.org/node/897638
+ */
+
+.visuallyhidden.focusable:active, .visuallyhidden.focusable:focus {
+    clip: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    width: auto;
+}
+
+/*
+ * Hide visually and from screen readers, but maintain layout
+ */
+
+.invisible {
+    visibility: hidden;
+}
+
+/*
+ * Clearfix: contain floats
+ */
+
+.inner.container:before, .clearfix:before, .inner.container:after, .clearfix:after {
+    /* avoid Opera bug with `contenteditable` attribute */
+    content: " ";
+    /* Use of `table` vs `block` is only neededif using `:before` to contain child element top-margins */
+    display: table;
+}
+.inner.container:after, .clearfix:after {
+    clear: both;
+}
+.inner.container, .clearfix {
+    *zoom: 1;
+}
+
+/*
+ * Custom Helper Classes
+ */
+
+.noborder {
+    border: none;
+}
+.clear-left {
+    clear: left;
+}
+.clear-right {
+    clear: right;
+}
+.clear-both {
+    clear: both;
+}
+.pull-left {
+    float: left;
+}
+.pull-right {
+    float: right;
+}
+.align-left {
+    text-align: left;
+}
+.align-right {
+    text-align: right;
+}
+.align-center {
+    text-align: center;
+}
+.text-bottom {
+    vertical-align: bottom;
+}
+.text-top {
+    vertical-align: top;
+}
+.text-middle {
+    vertical-align: middle;
+}
+.z-1 {
+    z-index: -1;
+    position: relative;
+}
+.z1 {
+    z-index: 1;
+    position: relative;
+}
+.z2 {
+    z-index: 2;
+    position: relative;
+}
+.z3 {
+    z-index: 3;
+    position: relative;
+}
+.z4 {
+    z-index: 4;
+    position: relative;
+}
+
+/*
+ * CUSTOM GRID SYSTEM - 12 UNITS
+ * By chromavant
+ */
+
+.grid {
+    padding: 1%;
+    display: block;
+    width: 50%;
+}
+
+/* Clearfix after every .grid | this is redundant css*/
+
+.grid, .row {
+    *zoom: 1;
+}
+.grid:before, .grid:after, .row:before, .row:after {
+    display: table;
+    content: "";
+    line-height: 0;
+}
+.grid:after, .row:after {
+    clear: both;
+}
+.col, .row {
+    display: block;
+    position: relative;
+    margin: 0 auto;
+}
+.row * {
+    float: left;
+}
+.full-width, .col.s12 {
+    width: 100%;
+}
+.col.s11 {
+    width: 91.6667%;
+}
+.col.s10 {
+    width: 83.3333%;
+}
+.col.s9 {
+    width: 75.0000%;
+}
+.col.s8 {
+    width: 66.6667%;
+}
+.col.s7 {
+    width: 58.3333%;
+}
+.col.s6 {
+    width: 50.0000%;
+}
+.col.s5 {
+    width: 41.6667%;
+}
+.col.s4 {
+    width: 33.3333%;
+}
+.col.s3 {
+    width: 25.0000%;
+}
+.col.s2 {
+    width: 16.6667%;
+}
+.col.s1 {
+    width: 8.3333%;
+}
+
+/* common wrapping on mobile */
+
+.row.s1 > * {
+    width: 100%;
+}
+.row.s2 > * {
+    width: 50%;
+}
+.row.s3 > * {
+    width: 33.3333%;
+}
+.row.s4 > * {
+    width: 25%;
+}
+
+/*body.ie6 .container,
+body.ie7 .container,
+body.ie8 .container {
+    zoom: 1;
+    filter: progid: DXImageTransform.Microsoft.DropShadow(OffX=0, OffY=-0, Color=grey);
+}*/
+
+
+/* begin site styles */
+
+/* form input focus style */
+input[type=text], textarea {
+  -webkit-transition: all 0.30s ease-in-out;
+  -moz-transition: all 0.30s ease-in-out;
+  -ms-transition: all 0.30s ease-in-out;
+  -o-transition: all 0.30s ease-in-out;
+  outline: none;
+  padding: 3px 0px 3px 3px;
+  margin: 5px 1px 3px 0px;
+  border: 1px solid #DDDDDD;
+}
+
+input[type=text]:focus, textarea:focus {
+  box-shadow: 0 0 10px rgba(150, 189, 255, 1);
+  padding: 3px 0px 3px 3px;
+  margin: 5px 1px 3px 0px;
+  border: 1px solid rgba(150, 189, 255, 1);
+}
+
+/* full height backdrop div */
+.backdrop {
+    z-index: -2;
+    width: 100%;
+    height: 100%;
+    display: block;
+    top: 0;
+    left: 0;
+    position: absolute;
+    background-color: white;
+}
+
+/* http://zerosixthree.se/vertical-align-anything-with-just-3-lines-of-css/*/
+
+.vertical-aligned {
+    position: relative;
+    top: 50%;
+    transform: translateY(-50%);
+}
+body,.dark-blue-gradient {
+    background-size: 100%;
+    background-color: #000F7F;
+    /*background-image: url('img/dark-blue-gradient.png');*/
+    background-repeat: repeat-y;
+    color: white;
+}
+body {
+    /*font: 16px/26px "Trebuchet MS", Helvetica, sans-serif;*/
+    font: 16px 'Raleway', sans-serif;
+    font-weight: 200;
+    width: 100%;
+    height: 100%;
+    min-width: 320px;
+    padding: 0;
+    background-color: #0d1c8c;
+    padding-top: 0;
+    color: white;
+}
+.wrapper {}
+.container {
+    display: block;
+    width: 100%;
+    margin: auto;
+    /* Dirty hack for Internet Explorer, removes 1px white line still not completely fixed */
+    margin-bottom: -1px; 
+}
+.full-height {
+    height: 100%;
+}
+
+/* expand to full height hack */
+
+.full-height, .container {
+    overflow: visible;
+    position: relative;
+}
+.inner.container {
+    margin: auto;
+    max-width: 1200px;
+    width: 100%;
+    height: 100%;
+}
+.shadow {
+    box-shadow: none;
+    -webkit-box-shadow: none;
+    -moz-box-shadow: none;
+}
+a {
+    text-decoration: none;
+}
+a {
+    color: white;
+}
+a:visited {
+    color: #303030;
+}
+a:hover, nav a.active {
+    color: #4B4B4B;
+}
+
+/*
+    MOBILE: Header
+ */
+
+h1, h2 {
+    font-weight: 200;
+}
+h1 {
+    font-size: 1.4em;
+}
+h2 {
+    font-size: 1.2em;
+}
+div.logo-container {
+    width: 75%;
+    max-width: 333px;
+    float: left;
+    text-align: left;
+}
+div.logo {}
+div.logo img {
+    width: 100%
+}
+
+/*
+    MOBILE: Menu
+ */
+
+.nav-container {
+    cursor: pointer;
+}
+
+nav ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+nav li {
+    width: 100%;
+}
+
+/*
+    MOBILE: Main
+ */
+/* http://stackoverflow.com/questions/13171968/magnifying-glass-zoom-cursor-over-image */
+
+.gallery img {
+    cursor: -moz-zoom-in;
+    cursor: -webkit-zoom-in;
+    cursor: zoom-in;
+}
+article {
+    padding: 1% 5% 0 5%;
+}
+article hr {
+    border: none;
+    border-bottom: 2px white solid;
+    /*#42C8E6*/
+}
+article ul {
+    margin-left: 18px;
+}
+article hr, article br {
+    padding: 0.9% 0 0.9% 0;
+}
+article h1 {
+    font-size: 1.7em;
+    color: white;
+    line-height: 53px;
+    padding: 0;
+    margin: 0;
+    margin-left: 20px;
+}
+div article div.heading {
+    position: relative;
+    background-color: #1D4FAD;
+    height: 53px;
+    margin-top: 18px;
+}
+article .heading-accent {
+    z-index: 5;
+    position: absolute;
+    width: 93px;
+    height: 45px;
+    display: block;
+    right: 3%;
+    top: 0;
+    background-image: url('../img/angelos-swirl-color.png');
+}
+div article section {
+    padding: 0;
+}
+article .row h2, {
+    padding-top: 2%;
+}
+
+/* image solution by http://stackoverflow.com/users/1063035/bryce-hanscomb */
+
+article .content {
+    width: 100%;
+    /* whatever is required */
+    text-align: center;
+    /* ensures the image is always in the h-middle */
+    overflow: hidden;
+    /* hide the cropped portion */
+}
+article .content img {
+    position: relative;
+    /* allows repositioning */
+    left: 100%;
+    /* move the whole width of the image to the right */
+    margin-left: -200%;
+    /* magic! */
+}
+.main aside {
+    color: white;
+    padding: 0px 5% 10px;
+}
+
+/*
+    MOBILE: Footer
+*/
+
+footer {
+    clear: both;
+    color: white;
+    padding: 30px;
+    text-align: right;
+    position: relative;
+}
+
+/*footer a, footer img {
+    vertical-align: text-bottom;
+}*/
+
+a {
+    color: rgb(194, 196, 255);
+}
+
+a:hover, a:visited {
+    color: rgb(159, 163, 255)
+}
+
+#backToTop {
+    width: 30px;
+    padding: 7px 0 3px 0;
+    background-color: #000F7F;
+    border:1px white solid;
+    z-index: 100;
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    text-align: center;
+    opacity: 0.85;
+    cursor: pointer;
+}
+/*footer a, footer img {
+    vertical-align: text-bottom;
+}*/
+
+
+/*
+    ALL: Fixes
+ */
+
+.ie7 .title {
+    padding-top: 20px;
+}
+
+/*.background {
+    display: none;
+}*/
+
+
+/*
+   Custom styles
+ */
+
+
+/*
+   Media Queries for Responsive Design.
+   There are roughly 16px per 1em
+*/
+
+@media only screen and (min-width: 400px) {
+}
+@media only screen and (min-width: 768px) {
+    /*768 medium*/
+    p {
+        font-size: 1.3em;
+    }
+    h1 {
+        font-size: 2em;
+    }
+    h2 {
+        font-size: 1.5em;
+    }
+    .medium-only {
+        display: block !important;
+    }
+    .small-only {
+        display: none !important;
+        visibility: hidden;
+        /* is this line needed? */
+    }
+    .col.m12 {
+        width: 100%;
+    }
+    .col.m11 {
+        width: 91.6667%;
+    }
+    .col.m10 {
+        width: 83.3333%;
+    }
+    .col.m9 {
+        width: 75.0000%;
+    }
+    .col.m8 {
+        width: 66.6667%;
+    }
+    .col.m7 {
+        width: 58.3333%;
+    }
+    .col.m6 {
+        width: 50.0000%;
+    }
+    .col.m5 {
+        width: 41.6667%;
+    }
+    .col.m4 {
+        width: 33.3333%;
+    }
+    .col.m3 {
+        width: 25.0000%;
+    }
+    .col.m2 {
+        width: 16.6667%;
+    }
+    .col.m1 {
+        width: 8.3333%;
+    }
+    /* common wrapping for medium */
+    .row.m1 > * {
+        width: 100%;
+    }
+    .row.m2 > * {
+        width: 50%;
+    }
+    .row.m3 > * {
+        width: 33.3333%;
+    }
+    .row.m4 > * {
+        width: 25%;
+    }
+    .row.m6 > * {
+        width: 16.6667%;
+    }
+    .shadow {
+        -webkit-box-shadow: 0px 5px 30px 1px #E1E1E1;
+        -moz-box-shadow: 0px 5px 30px1px #E1E1E1;
+        box-shadow: 0px 5px 30px 1px #E1E1E1;
+    }
+    /*body.ie6 .container,
+    body.ie7 .container,
+    body.ie8 .container {
+        zoom: 1;
+        filter: progid: DXImageTransform.Microsoft.DropShadow(OffX=0, OffY=2, Color=#aaa);
+    }*/
+    
+
+    /*
+        INTERMEDIATE: Menu
+     */
+    #mobile-menu-button {
+        display: none !important;
+    } margin-top: 0px;
+
+    nav li {
+        float: left;
+        display: block;
+        width: auto;
+        /* hide when closing menu in mobile view*/
+        overflow: hidden;
+    }
+    nav li a {
+        padding: 0 5px;
+        line-height: 50px;
+        font-size: 1.1em;
+        border-bottom: 0;
+        margin-left: 20px;
+    }
+    nav li:last-child a {
+        margin-right: 0;
+        border-right: 0;
+    }
+    nav a:hover, nav a.active {
+        color: white;
+        border-bottom: 1px #959dda solid;
+    }
+    /*
+        Article
+    */
+    article section .row div.pull-left {
+        padding: 1.5% 2% 1.5% 0;
+    }
+    article section .row div.pull-right {
+        padding: 1.5% 0 1.5% 2%;
+    }
+    footer .pull-left {
+        text-align: left;
+    }
+    footer .pull-right {
+        text-align: right;
+    }
+
+    #backToTop {
+        font-size: 30px;
+        width: 40px;
+        height: 40px;
+        padding: 2px 0 3px 0;
+        bottom: 20px;
+        right: 20px;
+    }
+}
+@media only screen and (min-width: 900px) {
+    body {
+        font-size: 1.1em;
+    }
+    nav li a {
+        font-size: 1.3em;
+    }
+}
+@media only screen and (min-width: 1200px) {
+    /*1200px large*/
+    .large-only {
+        display: block;
+    }
+    .col.l12 {
+        width: 100%;
+    }
+    .col.l11 {
+        width: 91.6667%;
+    }
+    .col.l10 {
+        width: 83.3333%;
+    }
+    .col.l9 {
+        width: 75.0000%;
+    }
+    .col.l8 {
+        width: 66.6667%;
+    }
+    .col.l7 {
+        width: 58.3333%;
+    }
+    .col.l6 {
+        width: 50.0000%;
+    }
+    .col.l5 {
+        width: 41.6667%;
+    }
+    .col.l4 {
+        width: 33.3333%;
+    }
+    .col.l3 {
+        width: 25.0000%;
+    }
+    .col.l2 {
+        width: 16.6667%;
+    }
+    .col.l1 {
+        width: 8.3333%;
+    }
+    /* common wrapping for large */
+    .row.l1 > * {
+        width: 100%;
+    }
+    .row.l2 > * {
+        width: 50%;
+    }
+    .row.l3 > * {
+        width: 33.3333%;
+    }
+    .row.l4 > * {
+        width: 25%;
+    }
+    .row.l8 > * {
+        width: 12.5%;
+    }
+    body {
+        overflow-x: hidden;
+    }
+    /*
+        WIDE: CSS3 Effects
+     */
+    h1 {
+        font-size: 2.4em;
+    }
+    .down-shadow {
+        -webkit-box-shadow: 0px 5px 25px 4px #ebebeb;
+        -moz-box-shadow: 0px 5px 25px 4px #ebebeb;
+        box-shadow: 0px 5px 25px 4px #ebebeb;
+    }
+    /*
+        WIDE: nav
+     */
+    /*
+        WIDE: Main
+     */
+}
+@media print, (min-resolution: 1.25dppx), (min-resolution: 120dpi) {
+    /* Style adjustments for high resolution devices */
+}
+
+/*
+   Print styles.
+   Inlined to avoid the additional HTTP request:
+   http://www.phpied.com/delay-loading-your-print-css/
+ */
+
+@media print {
+    *, *:before, *:after, *:first-letter, *:first-line {
+        background: transparent !important;
+        color: #000 !important;
+        /* Black prints faster:
+                                   http://www.sanbeiji.com/archives/953 */
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+    a, a:visited {
+        text-decoration: underline;
+    }
+    a[href]:after {
+        content: " (" attr(href) ")";
+    }
+    abbr[title]:after {
+        content: " (" attr(title) ")";
+    }
+    /*
+     * Don't show links that are fragment identifiers,
+     * or use the `javascript:` pseudo protocol
+     */
+    a[href^"#"]:after, a[href^"javascript:"]:after {
+        content: "";
+    }
+    pre, blockquote {
+        border: 1px solid #999;
+        page-break-inside: avoid;
+    }
+    /*
+     * Printing Tables:
+     * http://css-discuss.incutio.com/wiki/Printing_Tables
+     */
+    thead {
+        display: table-header-group;
+    }
+    tr, img {
+        page-break-inside: avoid;
+    }
+    img {
+        max-width: 100% !important;
+    }
+    p, h2, h3 {
+        orphans: 3;
+        widows: 3;
+    }
+    h2, h3 {
+        page-break-after: avoid;
+    }
+}
+
+/* force red outline for debugging */
+
+.debug {
+    border: 1px red solid !important;
+}
