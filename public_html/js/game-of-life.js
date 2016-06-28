@@ -469,12 +469,11 @@ var gameOfLife = (function(settings){
 
     // Setup Environment    
     frameRate(settings.refreshRate);
-    var optimizing = true;
 
     // Export Public Attributes
     var exports = {
         instance: createNewGame(),
-
+        optimizing: true,
         /**
          * Update current instance
          *
@@ -490,7 +489,7 @@ var gameOfLife = (function(settings){
                 settings.dimensions.y = round(settings.dimensions.y * performanceFactor);
                 fps.reset();
                 this.initialize();
-                optimizing = true;
+                this.optimizing = true;
             }
         },
 
@@ -507,10 +506,10 @@ var gameOfLife = (function(settings){
             renderGame(this.instance);
             //console.log(fps.current);
             //console.log('rendering');
-            if (optimizing) {
+            if (this.optimizing) {
                 renderOverlay('Optimizing ...', canvas.size.x/2, canvas.size.y/2);
                 if (frameCount > fps.framesToAverage) {
-                    optimizing = false;
+                    this.optimizing = false;
                 }
             }
         },
@@ -518,11 +517,11 @@ var gameOfLife = (function(settings){
         /**
          * Rewind to previous cell state 
          */
-        previous: function() {
+        showLast: function() {
             // some tuples would have been nice here
-            var previousCells = this.instance.prevCells;
+            var lastCells = this.instance.prevCells;
             this.instance.prevCells = this.instance.table.cells;
-            this.instance.table.cells = previousCells;
+            this.instance.table.cells = lastCells;
         },
 
         /**
@@ -558,7 +557,7 @@ void mouseClicked() {
         gameOfLife.initialize();
         drawing = true;
     }
-    else {
+    else if (!gameOfLife.optimizing) {
         drawing = !drawing;
     }
     
@@ -578,7 +577,7 @@ void keyPressed() { // jshint ignore:line
         gameOfLife.render();
     }
     else if ( keyboard.getKey(LEFT) ) {
-        gameOfLife.previous();
+        gameOfLife.showLast();
         gameOfLife.render();
     }
 };
