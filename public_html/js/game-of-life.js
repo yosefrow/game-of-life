@@ -36,6 +36,10 @@ else {
     canvas.size = new PVector(gCanvas.width, gCanvas.height);
 }
 
+void setup() { //jshint ignore:line
+    size(canvas.size.x, canvas.size.y);
+}; //jshint ignore:line
+
 // We only make use of settings in render functions and export objects, both of which are seperate
 // from the core functionality. This way the main part of the module is not dependent on settings
 var settings = {
@@ -48,6 +52,11 @@ var settings = {
     showBorder: false,   //   show cell border: true, false
     emitLight: 0.25      //  neighbor strength: 0.0 - 1.0
 };
+
+if (settings.dimensions.y == 'aspectRatio') {
+    var aspectRatio = canvas.size.y/canvas.size.x;
+    settings.dimensions.y = round(settings.dimensions.x * aspectRatio);
+}
 
 //console.log(settings.dimensions);
 
@@ -510,14 +519,7 @@ var gameOfLife = (function(settings){
 /***************************************************************************************************
  * Initialize Program
  * ************************************************************************************************/
-void setup() { //jshint ignore:line
-    size(canvas.size.x, canvas.size.y);
-}; //jshint ignore:line
 
-if (settings.dimensions.y == 'aspectRatio') {
-    var aspectRatio = canvas.size.y/canvas.size.x;
-    settings.dimensions.y = round(settings.dimensions.x * aspectRatio);
-}
 //console.log(gameOfLife);
 var drawing = true;
 
