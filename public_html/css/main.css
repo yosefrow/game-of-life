@@ -381,7 +381,7 @@ input[type=text]:focus, textarea:focus {
 body,.dark-blue-gradient {
     background-size: 100%;
     background-color: #000F7F;
-    /*background-image: url('img/dark-blue-gradient.png');*/
+    background-image: url('img/dark-blue-gradient.png');
     background-repeat: repeat-y;
     color: white;
 }
@@ -402,8 +402,6 @@ body {
     display: block;
     width: 100%;
     margin: auto;
-    /* Dirty hack for Internet Explorer, removes 1px white line still not completely fixed */
-    margin-bottom: -1px; 
 }
 .full-height {
     height: 100%;

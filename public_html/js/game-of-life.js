@@ -12,6 +12,8 @@
  * Interface: 
  *      Left Mouse Button:  Pause/Start
  *      Right Mouse Button: Start New Instance
+ *      Left Key: Last State (limited to just the last state)
+ *      Right Key: Next Update
  *
  * Color Codes: 
  *      Orange:   Alive
@@ -50,7 +52,7 @@ var settings = {
         x: 100,           //   table x dimension: 3+
         y: 'aspectRatio'  //   table y dimension: 3+ or 'aspectRatio'
     },
-    refreshRate: 20,     //  frames per second: 1-60 (recommended)
+    refreshRate: 15,     //  frames per second: 1-60 (recommended)
     cellRoundness: 0.25, //     cell roundness: 0.0 - 1.0
     showBorder: false,   //   show cell border: true, false
     emitLight: 0.25      //  neighbor strength: 0.0 - 1.0
@@ -91,6 +93,39 @@ var fps = {
         this.current = 0;
     }
 };
+
+/**
+ * Store and set keys
+ * 
+ * @type {Object}
+ */
+var keyboard = {
+    keys: {},
+    /**
+     * Set key to boolean value
+     * 
+     * @param {string|number} key : key or keyCode to set
+     * @param {boolean} boolean : state of key
+     */
+    setKey: function(key, boolean) {
+        var k = key.toString();
+        if (k.search(/^[\w\+\-\=]/g) === -1) {
+            this.keys[keyCode] = boolean;
+        } else {
+            this.keys[k] = boolean;
+        }
+    },
+    /**
+     * Get key in keys object and return it's value
+     *         
+     * @param  {string|number} key : key or keyCode to get
+     * @return {boolean} : whether or not the key is set
+     */
+    getKey: function(key) {
+        return this.keys[key];
+    }
+};
+
 
 /***************************************************************************************************
  * Namespace
@@ -324,7 +359,7 @@ var gameOfLife = (function(settings){
     };
     
     /***********************************************************************************************
-     * Render Functions
+     * Render Functions (Nothing After this point is essential to the game's core)
      **********************************************************************************************/
 
     var colors = {
@@ -442,6 +477,9 @@ var gameOfLife = (function(settings){
 
         /**
          * Update current instance
+         *
+         * @depends {Function} fps
+         * @depends {Object} settings
          */
         update: function() {
             this.instance.update();
@@ -451,13 +489,18 @@ var gameOfLife = (function(settings){
                 settings.dimensions.x = round(settings.dimensions.x * performanceFactor);
                 settings.dimensions.y = round(settings.dimensions.y * performanceFactor);
                 fps.reset();
-                this.renew();
+                this.initialize();
                 optimizing = true;
             }
         },
 
-        /*
+        /**
          * Render current instance
+         *
+         * @depends {Function} fps
+         * @depends {Function} renderOverlay
+         * @depends {Function} renderGame
+         * @depends {Object} canvas
          */
         render: function() {
             //console.log('instance', this.instance);
@@ -472,10 +515,22 @@ var gameOfLife = (function(settings){
             }
         },
 
-        /*
-         * Get new instance and load it
+        /**
+         * Rewind to previous cell state 
          */
-        renew: function() {
+        previous: function() {
+            // some tuples would have been nice here
+            var previousCells = this.instance.prevCells;
+            this.instance.prevCells = this.instance.table.cells;
+            this.instance.table.cells = previousCells;
+        },
+
+        /**
+         * Get new instance and load it
+         *
+         * @depends {Function} createNewGame
+         */
+        initialize: function() {
           this.instance = createNewGame();
         }
     };
@@ -500,7 +555,7 @@ void draw() {
 
 void mouseClicked() {
     if (mouseButton === RIGHT) {
-        gameOfLife.renew();
+        gameOfLife.initialize();
         drawing = true;
     }
     else {
@@ -513,4 +568,21 @@ void mouseClicked() {
     } else {
         noLoop();
     }
+};
+
+void keyPressed() { // jshint ignore:line
+    keyboard.setKey(key, true);
+
+    if ( keyboard.getKey(RIGHT) ) {
+        gameOfLife.update();
+        gameOfLife.render();
+    }
+    else if ( keyboard.getKey(LEFT) ) {
+        gameOfLife.previous();
+        gameOfLife.render();
+    }
+};
+
+void keyReleased() { // jshint ignore:line
+    keyboard.setKey(key, false);
 };
