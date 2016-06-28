@@ -482,7 +482,6 @@ var gameOfLife = (function(settings){
          */
         update: function() {
             this.instance.update();
-            fps.update();
             if (fps.current > 0 && fps.current < settings.refreshRate*0.9)  {
                 var performanceFactor = fps.current/settings.refreshRate
                 settings.dimensions.x = round(settings.dimensions.x * performanceFactor);
@@ -548,8 +547,10 @@ var drawing = true;
  * ************************************************************************************************/
 
 void draw() {
-    gameOfLife.render();
+    fps.update();
     gameOfLife.update();
+
+    gameOfLife.render();
 };
 
 void mouseClicked() {
@@ -562,8 +563,8 @@ void mouseClicked() {
     }
     
     if (drawing) {
-        loop();        
         fps.reset();
+        loop();
     } else {
         noLoop();
     }
