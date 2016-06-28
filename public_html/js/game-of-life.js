@@ -43,7 +43,7 @@ void setup() { //jshint ignore:line
 // from the core functionality. This way the main part of the module is not dependent on settings
 var settings = {
     dimensions: {
-        x: 100,           //   table x dimension: 3+
+        x: 200,           //   table x dimension: 3+
         y: 'aspectRatio'  //   table y dimension: 3+ or 'aspectRatio'
     },
     refreshRate: 15,     //  frames per second: 1-60 (recommended)
@@ -145,7 +145,7 @@ var keyboard = {
  * @depends {Object} fps
  * @type {Object}
  */
-var gameOfLife = (function(settings){
+var gameOfLife = (function(settings) {
     'use strict';
     //console.log(settings);
     /***********************************************************************************************
@@ -324,7 +324,7 @@ var gameOfLife = (function(settings){
                 else if (neighbors === 3) {
                     value = states.ALIVE;
                 }
-                if (!newCells[i]){
+                if (!newCells[i]) {
                     newCells[i] = [];
                 }
                 newCells[i][j] = value;
@@ -462,8 +462,17 @@ var gameOfLife = (function(settings){
          */
         update: function() {
             this.instance.update();
-            if (fps.current > 0 && fps.current < settings.refreshRate*0.9)  {
-                var performanceFactor = fps.current/settings.refreshRate;
+            var toleranceFactor = 0.9;
+
+            // only run this once, to avoid optimizing on page sleeps
+            if (frameCount == fps.framesToAverage && 
+                fps.current < settings.refreshRate * toleranceFactor 
+            ) {                
+                // There isn't really a linear correlation so we compensate a bit
+                // There is probably an exponential alogrithm for this
+                var compensation = 1.3; 
+                var performanceFactor = (fps.current/settings.refreshRate) * compensation;
+
                 settings.dimensions.x = round(settings.dimensions.x * performanceFactor);
                 settings.dimensions.y = round(settings.dimensions.y * performanceFactor);
                 fps.reset();
