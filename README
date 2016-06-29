@@ -8,8 +8,10 @@ according to the rules specified at http://en.wikipedia.org/wiki/Conway%27s_Game
 
 **Interface:** 
 	**Left Mouse Button:**  Pause/Start
-	**R Key:** Restart (New Instance)
-	**F Key:** Forward (Next Generation)
+	**R Key:** Restart (Game Initialize)
+	**F Key:** Forward (Game Update)
+	**-   +:** Zoom out / in (dimensions)
+	**{   }:** Speed down / up (frameRefresh)
 
 **Color Codes**: 
 	**Orange:**      Alive

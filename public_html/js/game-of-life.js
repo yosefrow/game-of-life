@@ -13,7 +13,9 @@
  * Interface: 
  *      Left Mouse Button:  Pause/Start
  *      R Key: (Restart) Start New Instance
- *      F Key: (Forward) Next Update
+ *      F Key: (Forward) Next Update 
+ *      - / +: Zoom out / in
+ *      { / }: Speed down / up
  *
  * Color Codes: 
  *      Orange:   Alive
@@ -29,10 +31,12 @@
 // https://javascriptweblog.wordpress.com/2010/12/07/namespacing-in-javascript/
 /**
  * Game Of Life Module
+ *
+ * MUST BE INITIALIZED WITH gameOfLife.sketch.load();
  *     
  * @param  {string} canvasContainer : id of canvas container
  * @param  {{x: width, y: height}} dimensions : dimensions of game
- * @return {Object} exports from module
+ * @return {{instance: Object, settings: Object, sketch: Object,}}} exports from module
  */
 var gameOfLife = (function(canvasContainer, dimensions){
     /***********************************************************************************************
@@ -61,7 +65,6 @@ var gameOfLife = (function(canvasContainer, dimensions){
     var colors = {};
 
     var keyboard;
-    var playing = true;
     
     if (typeof dimensions === 'object') {
         canvas.size = createVector(dimensions.x, dimensions.y);
@@ -348,11 +351,13 @@ var gameOfLife = (function(canvasContainer, dimensions){
          * object to handle the current game instance
          *
          * @depends {Object} settings
+         * @depends playing
          * 
          * @type {Object}
          */
         game = {
             current: undefined,
+            playing: false,
 
             /**
              * Generate new instance of GameOfLife, passing it dimensions settings
@@ -363,11 +368,13 @@ var gameOfLife = (function(canvasContainer, dimensions){
              */
             initialize: function() {
                 this.current = new GameOfLife(settings.dimensions.x, settings.dimensions.y);
+                this.playing = true;
             }
         };
 
         /**
-         * optimize current settings according to fps
+         * Optimize current settings according to fps during the first fps average. Don't run 
+         * again because further optimization is buggy ie. false positive from unfocusing tab
          *
          * @depends {Function} fps
          * @depends {Object} settings
@@ -403,6 +410,11 @@ var gameOfLife = (function(canvasContainer, dimensions){
         /*******************************************************************************************
          * Render Functions 
          ******************************************************************************************/
+        /**
+         * Colors Enumerator
+         * 
+         * @type {Object}
+         */
         colors = {
             WHITE: color(255),      
             BLUE: color(15, 36, 74),
@@ -411,6 +423,13 @@ var gameOfLife = (function(canvasContainer, dimensions){
             ORANGE: color(254, 163, 58)
         };
 
+        /**
+         * Render a partial view blocking overlay with some text (white on black)
+         * 
+         * @param  {string} message :  the string to show in the overlay
+         * @param  {number} x       : x position of overlay center
+         * @param  {number} y       : y position of overlay center
+         */
         render.overlay = function(message, x, y) {
             fill(0, 150);
             rect(0, 0, canvas.size.x, canvas.size.y);
@@ -509,6 +528,12 @@ var gameOfLife = (function(canvasContainer, dimensions){
             );
         };
 
+        /**
+         * Render an overlay when optimizing at the beginning
+         *
+         * @depends {Function} : render.overlay
+         * @depends {Object} : canvas.size
+         */
         render.optimizeOverlay = function() {
             if (performance.optimizing) {
                 render.overlay('Optimizing ...', canvas.size.x/2, canvas.size.y/2);
@@ -524,6 +549,11 @@ var gameOfLife = (function(canvasContainer, dimensions){
         //console.log(game);
     };
     
+    /**
+     * keyCodes Enumerator
+     * 
+     * @type {Object}
+     */
     var keyCodes = {
         PLUS: 187,
         MINUS: 189,
@@ -536,6 +566,8 @@ var gameOfLife = (function(canvasContainer, dimensions){
      *
      * @depends {Object} keyboard
      * @depends {Object} settings
+     * @depends {Object} render
+     * @depends {Object} game
      */
     var handleKeyPresses = function() {        
         if ( keyboard.keyIsDown('F') ) {
@@ -544,7 +576,6 @@ var gameOfLife = (function(canvasContainer, dimensions){
         }
         else if ( keyboard.keyIsDown('R') ) {
             game.initialize();
-            playing = true;
         }
     };
 
@@ -552,6 +583,7 @@ var gameOfLife = (function(canvasContainer, dimensions){
      * Handle Long keyboard key presses in draw function
      *
      * @depends {Object} keyboard
+     * @depends {Object} keyCodes
      * @depends {Object} settings
      */
     var handleLongKeyPresses = function() {
@@ -577,11 +609,12 @@ var gameOfLife = (function(canvasContainer, dimensions){
 
     sketch.draw = function() {
         fps.update();
-        if (playing) {
+        if (game.playing) {
             performance.optimize();
             game.current.update();
-            //console.log('instance', game);
             render.game(game.current);
+
+            //console.log('instance', game);
             render.optimizeOverlay();
             //console.log(fps.current, 'rendering');
         }
@@ -590,26 +623,31 @@ var gameOfLife = (function(canvasContainer, dimensions){
 
     sketch.mouseClicked = function() {
         if (!performance.optimizing) {
-            playing = !playing;
+            game.playing = !game.playing;
         }
     };
 
     sketch.keyPressed = function() {
+
+        console.log("p5 keyCode: ", keyCode, "p5 key: ", key);
         keyboard.setKey(key, true);
         handleKeyPresses();
-        console.log("p5 keyCode: ", keyCode, "p5 key: ", key);
     };
 
     sketch.keyReleased = function() { // jshint ignore:line
         keyboard.setKey(key, false);
     };
 
+    /**
+     * Manually load the p5 sketch variables into globals. Only one sketch should be loaded globally
+     * at a time. For p5 instances we can use the built in p5.js instancing
+     */
     sketch.load = function() {        
         if (sketch.setup) {setup = sketch.setup;};
         if (sketch.draw) {draw = sketch.draw};
         if (sketch.mouseClicked) {mouseClicked = sketch.mouseClicked};
-        if (sketch.keyPressed) {keyPressed = sketch.keyPressed};
         if (sketch.keyReleased) {keyReleased = sketch.keyReleased};        
+        if (sketch.keyPressed) {keyPressed = sketch.keyPressed};        
     };
 
     // Export Public Attributes
