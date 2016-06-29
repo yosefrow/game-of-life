@@ -140,7 +140,7 @@ var gameOfLife = (function(canvasContainer, dimensions){
              * @param  {string|number} key : key or keyCode to get
              * @return {boolean} : whether or not the key is set
              */
-            getKey: function(key) {
+            keyIsDown: function(key) {
                 return this.keys[key];
             }
         };
@@ -523,20 +523,55 @@ var gameOfLife = (function(canvasContainer, dimensions){
         game.initialize();
         //console.log(game);
     };
+    
+    var keyCodes = {
+        PLUS: 187,
+        MINUS: 189,
+        LEFT_BRACKET: 219,
+        RIGHT_BRACKET: 221
+    };
 
     /**
-     * Handle keyboard key presses
+     * Handle keyboard key presses in keyPressed Event Handler
      *
      * @depends {Object} keyboard
+     * @depends {Object} settings
      */
     var handleKeyPresses = function() {        
-        if ( keyboard.getKey('F') ) {
+        if ( keyboard.keyIsDown('F') ) {
             game.current.update();
             render.game(game.current);
         }
-        else if ( keyboard.getKey('R') ) {
+        else if ( keyboard.keyIsDown('R') ) {
             game.initialize();
             playing = true;
+        }
+    };
+
+    /**
+     * Handle Long keyboard key presses in draw function
+     *
+     * @depends {Object} keyboard
+     * @depends {Object} settings
+     */
+    var handleLongKeyPresses = function() {
+        if ( keyboard.keyIsDown(keyCodes.RIGHT_BRACKET) ) {
+            settings.refreshRate++;
+            frameRate(settings.refreshRate);
+        }
+        else if ( keyboard.keyIsDown(keyCodes.LEFT_BRACKET) ){
+            settings.refreshRate--;
+            frameRate(settings.refreshRate);
+        }
+        else if ( keyboard.keyIsDown(keyCodes.MINUS) ) {
+            settings.dimensions.x = round(settings.dimensions.x * 1.1);
+            settings.dimensions.y = round(settings.dimensions.y * 1.1);
+            game.initialize();
+        }
+        else if ( keyboard.keyIsDown(keyCodes.PLUS) ){
+            settings.dimensions.x = round(settings.dimensions.x * 0.9);
+            settings.dimensions.y = round(settings.dimensions.y * 0.9);
+            game.initialize();
         }
     };
 
@@ -550,6 +585,7 @@ var gameOfLife = (function(canvasContainer, dimensions){
             render.optimizeOverlay();
             //console.log(fps.current, 'rendering');
         }
+        handleLongKeyPresses();
     };
 
     sketch.mouseClicked = function() {
@@ -561,7 +597,7 @@ var gameOfLife = (function(canvasContainer, dimensions){
     sketch.keyPressed = function() {
         keyboard.setKey(key, true);
         handleKeyPresses();
-        //console.log("p5 keyCode: ", keyCode, "p5 key: ", key);
+        console.log("p5 keyCode: ", keyCode, "p5 key: ", key);
     };
 
     sketch.keyReleased = function() { // jshint ignore:line
@@ -575,7 +611,6 @@ var gameOfLife = (function(canvasContainer, dimensions){
         if (sketch.keyPressed) {keyPressed = sketch.keyPressed};
         if (sketch.keyReleased) {keyReleased = sketch.keyReleased};        
     };
-
 
     // Export Public Attributes
     exports.instance = game;
