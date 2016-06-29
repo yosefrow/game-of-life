@@ -643,11 +643,11 @@ var gameOfLife = (function(canvasContainer, dimensions){
      * at a time. For p5 instances we can use the built in p5.js instancing
      */
     sketch.load = function() {        
-        if (sketch.setup) {setup = sketch.setup;};
-        if (sketch.draw) {draw = sketch.draw};
-        if (sketch.mouseClicked) {mouseClicked = sketch.mouseClicked};
-        if (sketch.keyReleased) {keyReleased = sketch.keyReleased};        
-        if (sketch.keyPressed) {keyPressed = sketch.keyPressed};        
+        if (sketch.setup) {setup = sketch.setup;}
+        if (sketch.draw) {draw = sketch.draw;}
+        if (sketch.mouseClicked) {mouseClicked = sketch.mouseClicked;}
+        if (sketch.keyReleased) {keyReleased = sketch.keyReleased;}   
+        if (sketch.keyPressed) {keyPressed = sketch.keyPressed;}
     };
 
     // Export Public Attributes
@@ -657,3 +657,5 @@ var gameOfLife = (function(canvasContainer, dimensions){
 
     return exports;
 })('canvasContainer');
+
+gameOfLife.sketch.load();
