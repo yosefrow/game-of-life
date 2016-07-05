@@ -1,0 +1,8 @@
+/* test/my_test.js */
+var expect = require('chai').expect;
+
+describe('my test suite', function () {
+  it('fails un-majestically', function () {
+    expect(2).to.eql(2);
+  });
+});

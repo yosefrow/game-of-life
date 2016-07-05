@@ -91,6 +91,15 @@
         header a, header a:visited {
             color: white;
         }
+
+        #canvasContainer {
+            position: relative;
+            z-index: -2;
+        }
+
+        pre {
+            display: inline;
+        }
     </style>
     <!--[if lte IE 9]>
         <style>
@@ -123,11 +132,11 @@
 			<h3> Controls: </h3>
 			<br>
 	    	<ul>
-	        	<li>Pause/Play: L Click </li>
-	        	<li>Restart: R </li>
-                <li>Forward: F </li>
-                <li>-   +: Zoom out / in</li>
-                <li>{   }: Speed down / up</li>
+	        	<li>Play: <pre>L Click </pre></li>
+	        	<li>Restart: <pre>R </pre></li>
+                <li>Forward: <pre>F </pre></li>
+                <li>Zoom: <pre>-   + </pre></li>
+                <li>Speed: <pre>{   }</pre></li>
 	        </ul> 
     	</div>
 		<div class="pull-left">

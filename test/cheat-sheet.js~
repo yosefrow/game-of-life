@@ -1,0 +1,20 @@
+describe('test suite', function () {
+  beforeEach(function() { /*...*/ });
+  afterEach(function() { /*...*/ });
+
+  before(function() { /*...*/ });
+  after(function() { /*...*/ });
+
+  it('a basic test', function() {
+    /*...*/ });
+
+  it('a test with a promise', function() {
+    return somePromiseObject; });
+
+  it('an asynchronous test', function(next) {
+    if (success) { next(); } else { next(error); }
+  });
+
+  xit('use xit for pending tests', function() {
+    /*...*/ });
+});
