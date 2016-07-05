@@ -1,0 +1,28 @@
+{
+  "name": "game-of-life",
+  "version": "0.0.0",
+  "description": "Conway's Game of Life (Aristic Representation)",
+  "main": "index.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yosefrow/game-of-life.git"
+  },
+  "keywords": [
+    "game-of-life"
+  ],
+  "author": "Yosef H",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yosefrow/game-of-life/issues"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "mocha": "^2.5.3"
+  }
+}
