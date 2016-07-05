@@ -27,7 +27,7 @@
     <section>
         <article>
             <pre class="prettyprint source linenums"><code>/**
- * Conway's Game of Life in processing.js
+ * Conway's Game of Life in p5.js
  *
  * @see /en.wikipedia.org/wiki/Conway%27s_Game_of_Life
  * @author  Y H
@@ -62,14 +62,14 @@
  *
  * MUST BE INITIALIZED WITH gameOfLife.sketch.load();
  *     
- * @param  {string} canvasContainer : id of canvas container
- * @param  {{x: width, y: height}} dimensions : dimensions of game
+ * @param  {string} canvasContainer - id of canvas container
+ * @param  {{x: width, y: height}} dimensions - dimensions of game
  * @return {{instance: Object, settings: Object, sketch: Object,}}} exports from module
  */
-var gameOfLife = (function(canvasContainer, dimensions){
+window.gameOfLife = (function(canvasContainer, dimensions){
     /***********************************************************************************************
     * Settings
-    * *********************************************************************************************/
+    ***********************************************************************************************/
     // We only make use of settings in render functions &amp; combined logic, both of which are seperate
     // from core functionality. This way the main part of the module is not dependent on settings
     var settings = {
@@ -83,6 +83,42 @@ var gameOfLife = (function(canvasContainer, dimensions){
         emitLight: 0.25      //  neighbor strength: 0.0 - 1.0
     };
 
+    // END OF USER SETTINGS
+    settings.aspectRatio = 0; // this is populated correctly in sketch.setup
+
+    /**
+     * Adust the refreshRate setting which defines the framerate
+     * (This is a setting only. Current instance is unaffected)
+     * 
+     * @param {number} rate - number of frames per second
+     */
+    settings.setRefreshRate = function(rate) {
+        this.refreshRate = constrain(rate, 1, 100);
+    };
+        
+    /**
+     * Adjust the dimensions setting which defines the grid dimensions
+     * (This is a setting only. Current instance is unaffected)
+     * 
+     * @param {number} x - number of cells in the x axis (columns)
+     * @param {number} y - number of cells in the y axis (rows)
+     */
+    settings.setDimensions = function(x, y) {
+        var minDimension = 5;
+        var maxDimension = 500;
+
+        if (this.dimensions.y !== 'aspectRatio') {
+            this.dimensions.x = round(constrain(x, minDimension, maxDimension));
+            if (y) {
+                this.dimensions.y = round(constrain(y, minDimension, maxDimension));
+            }
+        }
+        else {
+            this.dimensions.x = round(constrain(x, minDimension / this.aspectRatio, maxDimension / this.aspectRatio));
+        }
+        //console.log(this.dimensions);
+    };
+
     var exports = {};
     var sketch = {};
     var canvas = {};
@@ -93,22 +129,23 @@ var gameOfLife = (function(canvasContainer, dimensions){
     var colors = {};
 
     var keyboard;
-    
-    if (typeof dimensions === 'object') {
-        canvas.size = createVector(dimensions.x, dimensions.y);
-    }
+    var handleKeyPresses;
+    var handleLongKeyPresses;
 
-    sketch.setup = function(){
-        if (typeof dimensions !== 'object') {
+    sketch.setup = function() {
+        if (typeof dimensions === 'object') {
+            canvas.size = createVector(dimensions.x, dimensions.y);
+        }
+        else {
             canvas.size = createVector(windowWidth, windowHeight);
         }
 
         canvas.handle = createCanvas(canvas.size.x, canvas.size.y);
         canvas.handle.parent(canvasContainer);
 
-        if (settings.dimensions.y == 'aspectRatio') {
-            var aspectRatio = canvas.size.y/canvas.size.x;
-            settings.dimensions.y = round(settings.dimensions.x * aspectRatio);
+        if (settings.dimensions.y === 'aspectRatio') {
+            settings.aspectRatio = canvas.size.y / canvas.size.x;
+            //console.log(settings.aspectRatio);
         }
 
         /*******************************************************************************************
@@ -131,14 +168,14 @@ var gameOfLife = (function(canvasContainer, dimensions){
                 if (frameCount % this.framesToAverage === 0) {
                     // divide number of sampled frames by actual seconds passed
                     var secondsElapsed = (millis() - this.frameStart) / 1000;
-                    this.current = round(this.framesToAverage/secondsElapsed);
+                    this.current = round(this.framesToAverage / secondsElapsed);
                     this.frameStart = millis();
                 }
             },
             /**
              * Reset frame tracking
              */
-            reset : function() {
+            reset: function() {
                 this.frameStart = millis();
                 this.current = 0;
             }
@@ -154,8 +191,8 @@ var gameOfLife = (function(canvasContainer, dimensions){
             /**
              * Set key to boolean value
              * 
-             * @param {string|number} key : key or keyCode to set
-             * @param {boolean} boolean : state of key
+             * @param {string|number} key - key or keyCode to set
+             * @param {boolean} boolean - state of key
              */
             setKey: function(key, boolean) {
                 var k = key.toString();
@@ -168,8 +205,8 @@ var gameOfLife = (function(canvasContainer, dimensions){
             /**
              * Get key in keys object and return it's value
              *         
-             * @param  {string|number} key : key or keyCode to get
-             * @return {boolean} : whether or not the key is set
+             * @param  {string|number} key - key or keyCode to get
+             * @return {boolean} - whether or not the key is set
              */
             keyIsDown: function(key) {
                 return this.keys[key];
@@ -178,12 +215,12 @@ var gameOfLife = (function(canvasContainer, dimensions){
 
         /*******************************************************************************************
          * Constructors and Prototypes
-         * ****************************************************************************************/
+         ******************************************************************************************/
         /**
          * Define Table Constructor which holds 2D array of cells
          * 
-         * @param {number} w: Width of array (number of columns)
-         * @param {number} h: Height of array (number of rows)
+         * @param {number} w - Width of array (number of columns)
+         * @param {number} h - Height of array (number of rows)
          * @constructor
          */
         var Table = function(w, h) {
@@ -197,7 +234,7 @@ var gameOfLife = (function(canvasContainer, dimensions){
          *
          * @depends {p5.Vector} this.dimensions 
          * 
-         * @return {Array.Array.&lt;number>} : 2D array of cells of size this.size by this.size
+         * @return {Array.Array.&lt;number>} - 2D array of cells of size this.size by this.size
          */
         Table.prototype.populateRandom = function() {
             var cellCoverage = random(0.3, 0.75);
@@ -220,7 +257,7 @@ var gameOfLife = (function(canvasContainer, dimensions){
          *
          * @depends {Array.Array.&lt;number>} this.cells
          * 
-         * @param {function(Array.Array.&lt;number>, number, number)} method: method to run on cells
+         * @param {function(Array.Array.&lt;number>, number, number)} method - method to run on cells
          */
         Table.prototype.forAllCells = function(method) {
             for (var i = 0; i &lt; this.cells.length; i++) {
@@ -236,8 +273,8 @@ var gameOfLife = (function(canvasContainer, dimensions){
          * Although we could theoretically define it as a regular object with nested functions, 
          * We Defined it as constructor in order to allow easy instancing and re-initializing
          * 
-         * @param {number} w: Width of table (number of columns)
-         * @param {number} h: Height of table (number of rows)
+         * @param {number} w - Width of table (number of columns)
+         * @param {number} h - Height of table (number of rows)
          * @constructor
          */
         var GameOfLife = function(w, h) {
@@ -275,10 +312,10 @@ var gameOfLife = (function(canvasContainer, dimensions){
             /**
              * Reference states Enum to determine if given cell Value is alive
              *
-             * @depends {Function} : getCell
+             * @depends {Function} - getCell
              * 
-             * @param  {number} cellValue: the value of a cell
-             * @return {boolean} : whether or not cell is alive
+             * @param  {number} cellValue - the value of a cell
+             * @return {boolean} - whether or not cell is alive
              */
             var isAlive = function(row, col) {
                 return getCell(row, col) === states.ALIVE;
@@ -287,7 +324,7 @@ var gameOfLife = (function(canvasContainer, dimensions){
             /**
              * @depends {Array.Array.&lt;number>} self.table.cells
              * 
-             * @param  {string} state: the value of a cell
+             * @param  {string} state - the value of a cell
              */    
             var getCell = function(row, col) {
                 return self.table.cells[row][col];
@@ -296,10 +333,10 @@ var gameOfLife = (function(canvasContainer, dimensions){
             /**
              * Roll over a value between min and max values
              * 
-             * @param  {number} value : incoming value
-             * @param  {number} min : minimum value in range
-             * @param  {number} max : maximum value in range
-             * @return {number} newValue : rolled-over value
+             * @param  {number} value - incoming value
+             * @param  {number} min - minimum value in range
+             * @param  {number} max - maximum value in range
+             * @return {number} newValue - rolled-over value
              */                
             var rollOverValue = function (value, min, max) {
                 var newValue = value &lt; min? max + (value % max) + 1: (
@@ -316,9 +353,9 @@ var gameOfLife = (function(canvasContainer, dimensions){
              * @depends {Function} isAlive
              * @depends {Function} getCell
              * 
-             * @param  {number} row : row in table
-             * @param  {number} col : column in table
-             * @return {number} : number of neighbors
+             * @param  {number} row - row in table
+             * @param  {number} col - column in table
+             * @return {number} - number of neighbors
              */
             var countNeighbors = function(row, col) {
                 var count = 0;
@@ -326,8 +363,8 @@ var gameOfLife = (function(canvasContainer, dimensions){
                 var i, j;
                 for (i = row - 1; i &lt;= row + 1; i++) {
                     for (j = col - 1; j &lt;= col + 1; j++) {
-                        var newRow = rollOverValue(i, 0, self.table.dimensions.y-1);
-                        var newCol = rollOverValue(j, 0, self.table.dimensions.x-1);
+                        var newRow = rollOverValue(i, 0, self.table.dimensions.y - 1);
+                        var newCol = rollOverValue(j, 0, self.table.dimensions.x - 1);
 
                         count += getCell(newRow, newCol);
                     }
@@ -370,73 +407,11 @@ var gameOfLife = (function(canvasContainer, dimensions){
             self.table.cells = newCells;
         };
 
-
         /*******************************************************************************************
-         * Combined Logic Functions (Nothing After this point is essential to the game's core)
+         * Nothing After this point is essential to the game's core)
          ******************************************************************************************/
-
-        /**
-         * object to handle the current game instance
-         *
-         * @depends {Object} settings
-         * @depends playing
-         * 
-         * @type {Object}
-         */
-        game = {
-            current: undefined,
-            playing: false,
-
-            /**
-             * Generate new instance of GameOfLife, passing it dimensions settings
-             *
-             * @depends {{dimensions}} settings
-             * 
-             * @return {GameOfLife}
-             */
-            initialize: function() {
-                this.current = new GameOfLife(settings.dimensions.x, settings.dimensions.y);
-                this.playing = true;
-            }
-        };
-
-        /**
-         * Optimize current settings according to fps during the first fps average. Don't run 
-         * again because further optimization is buggy ie. false positive from unfocusing tab
-         *
-         * @depends {Function} fps
-         * @depends {Object} settings
-         */
-        performance = {
-            optimizing: true,
-            optimize: function() {
-                var toleranceFactor = 0.9;
-
-                // only run this once, to asketch.optimizing on page sleeps
-                if (frameCount &lt;= fps.framesToAverage) {
-                    if (frameCount == fps.framesToAverage &amp;&amp; 
-                        fps.current &lt; settings.refreshRate * toleranceFactor 
-                    ) {                
-                        // There isn't really a linear correlation so we compensate a bit
-                        // There is probably an exponential alogrithm for this
-                        var compensation = 1.3; 
-                        var performanceFactor = (fps.current/settings.refreshRate) * compensation;
-
-                        settings.dimensions.x = round(settings.dimensions.x * performanceFactor);
-                        settings.dimensions.y = round(settings.dimensions.y * performanceFactor);
-                        fps.reset();
-                        game.initialize();
-                        this.optimizing = true;
-                    }
-                }
-                else {
-                    this.optimizing = false;
-                }
-            }
-        };
-    
         /*******************************************************************************************
-         * Render Functions 
+         * Render Functions (Pure Rendering, no object modifications whatsoever)
          ******************************************************************************************/
         /**
          * Colors Enumerator
@@ -454,9 +429,9 @@ var gameOfLife = (function(canvasContainer, dimensions){
         /**
          * Render a partial view blocking overlay with some text (white on black)
          * 
-         * @param  {string} message :  the string to show in the overlay
-         * @param  {number} x       : x position of overlay center
-         * @param  {number} y       : y position of overlay center
+         * @param  {string} message -  the string to show in the overlay
+         * @param  {number} x       - x position of overlay center
+         * @param  {number} y       - y position of overlay center
          */
         render.overlay = function(message, x, y) {
             fill(0, 150);
@@ -476,10 +451,10 @@ var gameOfLife = (function(canvasContainer, dimensions){
          *      cellRoundness: number
          * }} settings
          * 
-         * @param  {Table|GameOfLife} table: Table or Table Child
-         * @param  {p5.Vector}: Processing Vector of Size in pixels to render. the table at
+         * @param  {Table|GameOfLife} table - Table or Table Child
+         * @param  {p5.Vector} - Processing Vector of Size in pixels to render. the table at
          *
-         * @depends {Object} colors: Enumerator object for colors
+         * @depends {Object} colors - Enumerator object for colors
          */
         render.game = function(game) {
             // variables that go in the anonymous function are defined here as well, since the 
@@ -488,8 +463,8 @@ var gameOfLife = (function(canvasContainer, dimensions){
             //var cellSize = p5.Vector.div(canvas.size, game.table.dimensions);
             // ^ this not working for some reason
             var cellSize = createVector(
-                canvas.size.x/game.table.dimensions.x, 
-                canvas.size.y/game.table.dimensions.y
+                canvas.size.x / game.table.dimensions.x, 
+                canvas.size.y / game.table.dimensions.y
             );
             //console.log('cells', cellSize, 'canvas', canvas.size, 'table', game.table.dimensions);
             var prevCells = game.prevCells;
@@ -549,7 +524,7 @@ var gameOfLife = (function(canvasContainer, dimensions){
                     textAlign(CENTER, CENTER);
                     fill(255*!value)
                     textSize( min(cellSize.x, cellSize.y) * 0.8);
-                    text(neighbors, x + cellSize.x/2, y + cellSize.y / 2); 
+                    text(neighbors, x + cellSize.x / 2, y + cellSize.y / 2); 
                   */
 
                 }
@@ -559,80 +534,214 @@ var gameOfLife = (function(canvasContainer, dimensions){
         /**
          * Render an overlay when optimizing at the beginning
          *
-         * @depends {Function} : render.overlay
-         * @depends {Object} : canvas.size
+         * @depends {Function} - render.overlay
+         * @depends {Object} - canvas.size
          */
         render.optimizeOverlay = function() {
             if (performance.optimizing) {
-                render.overlay('Optimizing ...', canvas.size.x/2, canvas.size.y/2);
+                render.overlay('Optimizing ...', canvas.size.x / 2, canvas.size.y / 2);
+            }
+        };
+
+        /*******************************************************************************************
+         * Game Instance Management and Flow Control
+         ******************************************************************************************/
+
+        // for some reason redefintions are not properly exported. So we must define each property
+        // individually, or the export won't work o_o
+        /**
+         * object to handle the current game instance
+         *
+         * @depends {Object} settings
+         * @depends {Object} fps
+         * 
+         * @type {Object}
+         */
+        game = {}; // re-initialize game for documentation purposes and to show it is unmodified
+        game.current = undefined;
+        game.playing = false;
+
+        /**
+         * Toggle the game.playing state from true or false
+         */
+        game.toggle = function() {
+            console.log('toggled');
+            this.playing = !this.playing;
+        };
+
+        /**
+         * Generate new instance of GameOfLife, pass it dimensions, and attach it to game.current
+         *
+         * @depends {Object} settings
+         */
+        game.initialize = function() {
+            fps.reset();
+            var y = settings.dimensions.y;
+            if (y === 'aspectRatio') {
+                y = round(settings.dimensions.x * settings.aspectRatio);
+            }
+            //console.log(y);
+            this.current = new GameOfLife(settings.dimensions.x, y);
+            this.playing = true;
+        };
+
+        /**
+         * Go forward one step in the game (get next generation)
+         *
+         * @depends render
+         */
+        game.forward = function() {            
+            this.current.update();
+            render.game(this.current);
+        };
+
+        /**
+         * Adjust refresh rate (frame rate)
+         * @param  {number} amount - target frames per second
+         *
+         * @depends settings
+         */
+        game.adjustRefreshRate = function(amount) {
+            settings.setRefreshRate(settings.refreshRate + amount);  
+            frameRate(settings.refreshRate);
+        };
+
+        /**
+         * Scale game dimensions and re-initialize game
+         * @param  {number} amount - target frames per second
+         * 
+         * @depends settings
+         */
+        game.scaleDimensionsBy = function(factor) {
+            settings.setDimensions(settings.dimensions.x * factor);
+            this.initialize();
+        };
+
+        /**
+         * Zoom in table - reduce number of cells, but increase their size
+         */
+        game.zoomIn = function() {
+            this.scaleDimensionsBy(0.9);
+        };
+
+        /**
+         * Zoom out table - increase number of cells, but decrease their size
+         */
+        game.zoomOut = function() {
+            this.scaleDimensionsBy(1.1);
+        };
+
+        /**
+         * Speed up game - increase refreshRate (frames per second)
+         * (actual frames per second capped by machine limits)
+         */
+        game.speedUp = function() {
+            this.adjustRefreshRate(+1);
+        };
+
+        /**
+         * slow down game - decrease refreshRate (frames per second)
+         * (actual frames per second capped by machine limits)
+         */
+        game.slowDown = function() {
+            this.adjustRefreshRate(-1);
+        };
+
+        /*******************************************************************************************
+         * Post Initialization Adjustments
+         ******************************************************************************************/ 
+        /**
+         * Optimize current settings according to fps during the first fps average. Don't run 
+         * again because further optimization is buggy ie. false positive from unfocusing tab
+         *
+         * @depends {Object} settings
+         * @depends {Object} fps
+         * @depends {Object} game
+         */
+        performance = {
+            optimizing: true,
+            optimize: function() {
+                var toleranceFactor = 0.9;
+
+                // only run this once, to asketch.optimizing on page sleeps
+                if (frameCount &lt;= fps.framesToAverage) {
+                    if (frameCount == fps.framesToAverage &amp;&amp; 
+                        fps.current &lt; settings.refreshRate * toleranceFactor 
+                    ) {                
+                        // There isn't really a linear correlation so we compensate a bit
+                        // There is probably an exponential alogrithm for this
+                        var compensation = 1.3; 
+                        var performanceFactor = (fps.current / settings.refreshRate) * compensation;
+                        game.scaleDimensionsBy(performanceFactor);
+                        this.optimizing = true;
+                    }
+                }
+                else {
+                    this.optimizing = false;
+                }
+            }
+        };
+
+        /*******************************************************************************************
+         * User Interface
+         ******************************************************************************************/  
+        /**
+         * keyCodes Enumerator
+         * 
+         * @type {Object}
+         */
+        var keyCodes = {
+            PLUS: 187,
+            MINUS: 189,
+            LEFT_BRACKET: 219,
+            RIGHT_BRACKET: 221
+        };
+
+        /**
+         * Handle keyboard key presses in keyPressed Event Handler
+         *
+         * @depends {Object} keyboard
+         * @depends {Object} keyCodes
+         * @depends {Object} game
+         */
+        handleKeyPresses = function() {        
+            if ( keyboard.keyIsDown('F') ) {
+                game.forward();
+            }
+            else if ( keyboard.keyIsDown('R') ) {
+                game.initialize();
+            }
+        };
+
+        /**
+         * Handle Long keyboard key presses in draw function
+         *
+         * @depends {Object} keyboard
+         * @depends {Object} keyCodes
+         * @depends {Object} game
+         */
+        handleLongKeyPresses = function() {
+            if ( keyboard.keyIsDown(keyCodes.RIGHT_BRACKET) ) {
+                game.speedUp();
+            }
+            else if ( keyboard.keyIsDown(keyCodes.LEFT_BRACKET) ){
+                game.slowDown();
+            }
+            else if ( keyboard.keyIsDown(keyCodes.MINUS) ) {
+                game.zoomOut();
+            }
+            else if ( keyboard.keyIsDown(keyCodes.PLUS) ){
+                game.zoomIn();
             }
         };
 
         /*******************************************************************************************
          * Initialize Program
-         * ****************************************************************************************/
+         ******************************************************************************************/
         // Setup Environment    
         frameRate(settings.refreshRate);
         game.initialize();
         //console.log(game);
-    };
-    
-    /**
-     * keyCodes Enumerator
-     * 
-     * @type {Object}
-     */
-    var keyCodes = {
-        PLUS: 187,
-        MINUS: 189,
-        LEFT_BRACKET: 219,
-        RIGHT_BRACKET: 221
-    };
-
-    /**
-     * Handle keyboard key presses in keyPressed Event Handler
-     *
-     * @depends {Object} keyboard
-     * @depends {Object} settings
-     * @depends {Object} render
-     * @depends {Object} game
-     */
-    var handleKeyPresses = function() {        
-        if ( keyboard.keyIsDown('F') ) {
-            game.current.update();
-            render.game(game.current);
-        }
-        else if ( keyboard.keyIsDown('R') ) {
-            game.initialize();
-        }
-    };
-
-    /**
-     * Handle Long keyboard key presses in draw function
-     *
-     * @depends {Object} keyboard
-     * @depends {Object} keyCodes
-     * @depends {Object} settings
-     */
-    var handleLongKeyPresses = function() {
-        if ( keyboard.keyIsDown(keyCodes.RIGHT_BRACKET) ) {
-            settings.refreshRate++;
-            frameRate(settings.refreshRate);
-        }
-        else if ( keyboard.keyIsDown(keyCodes.LEFT_BRACKET) ){
-            settings.refreshRate--;
-            frameRate(settings.refreshRate);
-        }
-        else if ( keyboard.keyIsDown(keyCodes.MINUS) ) {
-            settings.dimensions.x = round(settings.dimensions.x * 1.1);
-            settings.dimensions.y = round(settings.dimensions.y * 1.1);
-            game.initialize();
-        }
-        else if ( keyboard.keyIsDown(keyCodes.PLUS) ){
-            settings.dimensions.x = round(settings.dimensions.x * 0.9);
-            settings.dimensions.y = round(settings.dimensions.y * 0.9);
-            game.initialize();
-        }
     };
 
     sketch.draw = function() {
@@ -651,13 +760,13 @@ var gameOfLife = (function(canvasContainer, dimensions){
 
     sketch.mouseClicked = function() {
         if (!performance.optimizing) {
-            game.playing = !game.playing;
+            console.log('sketch!');
+            game.toggle();
         }
     };
 
     sketch.keyPressed = function() {
-
-        console.log("p5 keyCode: ", keyCode, "p5 key: ", key);
+        //console.log("p5 keyCode: ", keyCode, "p5 key: ", key);
         keyboard.setKey(key, true);
         handleKeyPresses();
     };
@@ -679,14 +788,14 @@ var gameOfLife = (function(canvasContainer, dimensions){
     };
 
     // Export Public Attributes
-    exports.instance = game;
-    exports.setttings = settings;
+    exports.game = game;
+    exports.settings = settings;
     exports.sketch = sketch;
 
     return exports;
 })('canvasContainer');
 
-gameOfLife.sketch.load();</code></pre>
+gameOfLife.sketch.load(); //jshint ignore:line</code></pre>
         </article>
     </section>
 
@@ -696,13 +805,13 @@ gameOfLife.sketch.load();</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-sketch.setup-GameOfLife.html">GameOfLife</a></li><li><a href="-_anonymous_-sketch.setup-Table.html">Table</a></li></ul><h3>Global</h3><ul><li><a href="global.html#gameOfLife">gameOfLife</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="-_anonymous_-sketch.setup-GameOfLife.html">GameOfLife</a></li><li><a href="-_anonymous_-sketch.setup-Table.html">Table</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Thu Jun 30 2016 12:08:41 GMT+0300 (IDT)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.0</a> on Tue Jul 05 2016 12:29:02 GMT+0300 (IDT)
 </footer>
 
 <script> prettyPrint(); </script>
